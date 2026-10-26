@@ -1,4 +1,7 @@
 import process from 'node:process';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,6 +9,10 @@ import { pool, initDb } from './db.js';
 import { poblarBaseDeDatos } from './seed.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, '../dist');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -397,6 +404,22 @@ app.post('/api/movimientos', async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Servir archivos estáticos del frontend de producción (dist/)
+app.use(express.static(distPath));
+
+// Redirigir cualquier ruta que no sea /api al index.html de React (SPA Fallback)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send('API de Panteón La Soledad activa. Para cargar la interfaz web, compila con "npm run build".');
   }
 });
 

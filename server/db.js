@@ -12,10 +12,17 @@ const password = process.env.PGPASSWORD || 'postgres';
 const host = process.env.PGHOST || 'localhost';
 const port = parseInt(process.env.PGPORT || '5432', 10);
 
+const isCloudDb = Boolean(process.env.DATABASE_URL);
+
 /**
- * Crea la base de datos en PostgreSQL si no existe.
+ * Crea la base de datos en PostgreSQL si no existe (solo en entorno local).
  */
 async function asegurarBaseDeDatosExiste() {
+  if (isCloudDb) {
+    // En la nube (Render, Neon, Supabase, Railway) la base de datos ya está creada por el proveedor
+    return;
+  }
+
   const adminClient = new Client({
     host,
     port,
@@ -47,17 +54,29 @@ async function asegurarBaseDeDatosExiste() {
   }
 }
 
-// Configuración del Pool principal
-export const pool = new Pool({
-  host,
-  port,
-  database: targetDb,
-  user,
-  password,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+// Configuración del Pool principal (Soporta DATABASE_URL en la nube o variables individuales en local)
+export const pool = new Pool(
+  isCloudDb
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+          rejectUnauthorized: false
+        },
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      }
+    : {
+        host,
+        port,
+        database: targetDb,
+        user,
+        password,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      }
+);
 
 /**
  * Inicializa las tablas del sistema en PostgreSQL si no existen aún.
@@ -67,7 +86,11 @@ export async function initDb() {
     await asegurarBaseDeDatosExiste();
 
     const client = await pool.connect();
-    console.log(`[PostgreSQL] Conectado exitosamente a la base de datos: ${targetDb}`);
+    console.log(
+      isCloudDb
+        ? `[PostgreSQL] Conectado exitosamente a la base de datos en la nube (DATABASE_URL).`
+        : `[PostgreSQL] Conectado exitosamente a la base de datos local: ${targetDb}`
+    );
 
     await client.query(`
       -- 1. Tabla de Titulares

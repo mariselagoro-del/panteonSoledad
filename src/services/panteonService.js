@@ -3,7 +3,7 @@
 import datasetReal from '../constants/panteonDataset.json';
 import { dbService } from './dbService';
 
-const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || '/api';
 const DATASET_VERSION_ACTUAL = datasetReal.metadata?.versionDataset || '2026.10-limpio-oficial';
 
 let sincronizadoPromise = null;
