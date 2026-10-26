@@ -410,17 +410,19 @@ app.post('/api/movimientos', async (req, res) => {
 // Servir archivos estáticos del frontend de producción (dist/)
 app.use(express.static(distPath));
 
-// Redirigir cualquier ruta que no sea /api al index.html de React (SPA Fallback)
-app.get('*', (req, res, next) => {
+// Redirigir cualquier ruta que no sea /api al index.html de React (SPA Fallback compatible con Express 5)
+app.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    return next();
+  }
   if (req.path.startsWith('/api')) {
     return next();
   }
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(200).send('API de Panteón La Soledad activa. Para cargar la interfaz web, compila con "npm run build".');
+    return res.sendFile(indexPath);
   }
+  return res.status(200).send('API de Panteón La Soledad activa. Para cargar la interfaz web, compila con "npm run build".');
 });
 
 // Iniciar servidor tras conectar a la base de datos
