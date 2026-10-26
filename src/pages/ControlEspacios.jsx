@@ -1,5 +1,5 @@
 // src/pages/ControlEspacios.jsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -37,13 +37,22 @@ export default function ControlEspacios({
   onAbrirHistorial,
   onContextMenu,
   onRegistrarMovimiento,
-  onActualizarFosa
+  onActualizarFosa,
+  enfocarBusqueda = false
 }) {
   const [busquedaLocal, setBusquedaLocal] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('Todos'); // 'Todos' | 'Fosa' | 'Nicho'
   const [filtroPago, setFiltroPago] = useState('Todos'); // 'Todos' | 'Al Corriente' | 'Con Adeudo'
   const [filtroOcupacion, setFiltroOcupacion] = useState('Todos'); // 'Todos' | 'Ocupado' | 'Disponible'
   const [filtroExpediente, setFiltroExpediente] = useState('Todos'); // 'Todos' | 'Completo' | 'Incompleto' | 'Sin Documentacion'
+  
+  const inputBusquedaRef = useRef(null);
+
+  useEffect(() => {
+    if (enfocarBusqueda) {
+      inputBusquedaRef.current?.focus();
+    }
+  }, [enfocarBusqueda]);
   
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1);
@@ -186,6 +195,7 @@ export default function ControlEspacios({
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-4 relative">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
+              ref={inputBusquedaRef}
               type="text"
               value={busqueda}
               onChange={(e) => handleBusquedaInputChange(e.target.value)}

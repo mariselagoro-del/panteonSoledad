@@ -67,21 +67,11 @@ export default function Sidebar({
   ];
 
   const handleItemClick = (id) => {
-    if (id === 'busqueda') {
-      onCambiarPestana('espacios');
-    } else {
-      onCambiarPestana(id);
-    }
+    onCambiarPestana(id);
   };
 
   const isItemActive = (id) => {
-    if (id === 'dashboard' && pestanaActiva === 'dashboard') return true;
-    if (id === 'espacios' && pestanaActiva === 'espacios') return true;
-    if (id === 'mapa' && pestanaActiva === 'mapa') return true;
-    if (id === 'finanzas' && pestanaActiva === 'finanzas') return true;
-    if (id === 'reportes' && pestanaActiva === 'reportes') return true;
-    if (id === 'importador' && pestanaActiva === 'importador') return true;
-    return false;
+    return pestanaActiva === id;
   };
 
   return (

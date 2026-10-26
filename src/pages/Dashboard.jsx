@@ -27,6 +27,68 @@ import {
 } from 'lucide-react';
 import bannerPanteon from '../assets/banner-panteon.jpg';
 
+// Tooltip flotante a un lado para la gráfica de dona (Distribución de tumbas por sección)
+function TooltipDonaSeccion({ active, payload, coordinate }) {
+  if (!active || !payload || !payload.length) return null;
+  const item = payload[0];
+
+  // Si el punto está en la mitad derecha o izquierda del centro de la dona (96px en caja de 192px)
+  const esDerecha = coordinate ? coordinate.x >= 96 : true;
+
+  return (
+    <div
+      className="bg-[#152822] border border-[#2D6A4F] px-3.5 py-2.5 rounded-xl shadow-2xl pointer-events-none select-none min-w-[135px] z-50"
+      style={{
+        transform: esDerecha
+          ? 'translate(32px, -50%)'
+          : 'translate(calc(-100% - 32px), -50%)'
+      }}
+    >
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span
+          className="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-white/40"
+          style={{ backgroundColor: item.payload?.color || '#52B788' }}
+        />
+        <p className="text-xs font-bold text-white tracking-tight">
+          {item.name}
+        </p>
+      </div>
+      <div className="flex items-baseline justify-between gap-3 pt-1.5 border-t border-white/15">
+        <span className="text-[11px] font-medium text-white/90">Tumbas:</span>
+        <span className="text-xs font-black text-white font-mono">
+          {Number(item.value).toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Tooltip flotante a un lado para la gráfica de barras (Ingresos por concepto)
+function TooltipBarrasIngreso({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  const item = payload[0];
+
+  return (
+    <div className="bg-[#152822] border border-[#2D6A4F] px-3.5 py-2.5 rounded-xl shadow-2xl pointer-events-none select-none min-w-[140px] z-50">
+      <p className="text-[11px] font-bold text-white tracking-wide uppercase mb-1">
+        {item.payload?.concepto || label}
+      </p>
+      <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-white/15">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-white/40"
+            style={{ backgroundColor: item.payload?.color || '#2D6A4F' }}
+          />
+          <span className="text-[11px] font-medium text-white/90">Ingreso:</span>
+        </div>
+        <span className="text-xs font-black text-white font-mono">
+          $ {Number(item.value).toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard({
   registrosFosas = [],
   movimientosFinancieros = [],
@@ -334,8 +396,9 @@ export default function Dashboard({
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(val, name) => [`${val.toLocaleString()} tumbas`, name]}
-                    contentStyle={{ backgroundColor: '#1C332B', borderColor: '#2A4D41', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                    content={<TooltipDonaSeccion />}
+                    allowEscapeViewBox={{ x: true, y: true }}
+                    wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -390,8 +453,11 @@ export default function Dashboard({
                   tickFormatter={(val) => `$${val / 1000}k`}
                 />
                 <Tooltip 
-                  formatter={(val) => [`$ ${val.toLocaleString()}`, 'Ingreso']}
-                  contentStyle={{ backgroundColor: '#1C332B', borderColor: '#2A4D41', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                  content={<TooltipBarrasIngreso />}
+                  offset={{ x: 28, y: -20 }}
+                  allowEscapeViewBox={{ x: false, y: true }}
+                  cursor={{ fill: 'rgba(45, 106, 79, 0.08)' }}
+                  wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
                 />
                 <Bar dataKey="monto" radius={[6, 6, 0, 0]}>
                   {datosIngresos.map((entry, index) => (

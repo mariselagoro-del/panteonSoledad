@@ -48,7 +48,7 @@ export default function App() {
   });
 
   // 2. Estado de Navegación y UI
-  const [pestanaActiva, setPestanaActiva] = useState('dashboard'); // 'dashboard' | 'espacios' | 'mapa' | 'finanzas' | 'reportes' | 'importador'
+  const [pestanaActiva, setPestanaActiva] = useState('dashboard'); // 'dashboard' | 'espacios' | 'busqueda' | 'mapa' | 'finanzas' | 'reportes' | 'importador'
   const [menuColapsado, setMenuColapsado] = useState(false);
   const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const [busquedaGlobal, setBusquedaGlobal] = useState('');
@@ -295,7 +295,7 @@ export default function App() {
           onSeleccionarFosa={(item) => setRegistroAEditar(item)}
           onNavegarAPadron={(query) => {
             setBusquedaGlobal(query);
-            setPestanaActiva('espacios');
+            setPestanaActiva('busqueda');
           }}
           totalConAdeudo={totalConAdeudo}
           usuarioActual={usuarioAutenticado}
@@ -317,8 +317,8 @@ export default function App() {
               />
             )}
 
-            {/* Vista 2: Padrón de Fosas y Nichos */}
-            {pestanaActiva === 'espacios' && (
+            {/* Vista 2: Padrón de Fosas y Nichos / Búsqueda */}
+            {(pestanaActiva === 'espacios' || pestanaActiva === 'busqueda') && (
               <ControlEspacios
                 secciones={secciones}
                 seccionSeleccionada={seccionSeleccionada}
@@ -333,6 +333,7 @@ export default function App() {
                 onContextMenu={handleContextMenu}
                 onRegistrarMovimiento={handleRegistrarMovimiento}
                 onActualizarFosa={handleActualizarRegistro}
+                enfocarBusqueda={pestanaActiva === 'busqueda'}
               />
             )}
 
