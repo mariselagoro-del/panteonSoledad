@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+.font-cursive {
+  font-family: 'Alex Brush', 'Dancing Script', 'Brush Script MT', cursive;
+}
+
+.font-serif-elegant {
+  font-family: 'Playfair Display', Georgia, Cambria, serif;
+}
+
+@theme {
+  /* ========================================================= */
+  /* PALETA OFICIAL DEL SISTEMA (SEGÚN MAQUETA PANTEÓN LA SOLEDAD): */
+  /* Verde Bosque / Pino:  #152822 / #2D6A4F                  */
+  /* Arena / Camel Cálido: #D2B79A / #C49A6C                  */
+  /* Crema / Lino Cálido:  #FAF8F5 / #F5F3EF / #EAE6DF        */
+  /* Salvia / Esmeralda:   #389868 / #2D6A4F                  */
+  /* Coral / Rosa Pago:    #E03E3E / #E76F51                  */
+  /* ========================================================= */
+
+  --color-rust-50: #FFF5F5;
+  --color-rust-100: #FEE8E8;
+  --color-rust-200: #FCD2D2;
+  --color-rust-300: #F8AAAA;
+  --color-rust-400: #F07070;
+  --color-rust-500: #E03E3E;
+  --color-rust-600: #C62828;
+  --color-rust-700: #A31F1F;
+  --color-rust-800: #821E1E;
+  --color-rust-900: #661818;
+  --color-rust: #E03E3E;
+
+  --color-mustard-50: #FAF7F2;
+  --color-mustard-100: #F4ECE1;
+  --color-mustard-200: #EBDDCB;
+  --color-mustard-300: #DFC7AB;
+  --color-mustard-400: #D2B79A;
+  --color-mustard-500: #C49A6C;
+  --color-mustard-600: #A87D4E;
+  --color-mustard-700: #88623A;
+  --color-mustard-800: #6B4C2D;
+  --color-mustard-900: #513820;
+  --color-mustard: #D2B79A;
+
+  --color-teal-50: #F0F6F3;
+  --color-teal-100: #DEECE5;
+  --color-teal-200: #BED8CB;
+  --color-teal-300: #8EBFA9;
+  --color-teal-400: #529F7F;
+  --color-teal-500: #2D6A4F;
+  --color-teal-600: #21533D;
+  --color-teal-700: #183E2D;
+  --color-teal-800: #152822;
+  --color-teal-900: #0D1B17;
+  --color-teal: #152822;
+
+  --color-olive-50: #F2F9F5;
+  --color-olive-100: #E1F2E8;
+  --color-olive-200: #C4E5D2;
+  --color-olive-300: #98D2B1;
+  --color-olive-400: #63B88B;
+  --color-olive-500: #389868;
+  --color-olive-600: #2A7952;
+  --color-olive-700: #225E40;
+  --color-olive-800: #1D4B34;
+  --color-olive-900: #183E2C;
+  --color-olive: #2D6A4F;
+
+  --color-cream-50: #FAF8F5;
+  --color-cream-100: #F5F3EF;
+  --color-cream-200: #EAE6DF;
+  --color-cream-300: #DDD7CE;
+  --color-cream-400: #CBC3B6;
+  --color-cream-500: #B2A797;
+  --color-cream-600: #938676;
+  --color-cream-700: #766B5D;
+  --color-cream-800: #5B5247;
+  --color-cream-900: #443D35;
+  --color-cream: #EAE6DF;
+
+  --color-pine: #152822;
+  --color-sand: #D2B79A;
+}
+
+@layer base {
+  body {
+    @apply m-0 p-0 font-sans antialiased text-stone-900 bg-[#FAF8F5];
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 6mm 8mm;
+  }
+  
+  html, body {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    overflow: hidden !important;
+  }
+
+  .print-page-duo {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6mm !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

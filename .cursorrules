@@ -1,0 +1,15 @@
+# Reglas de Cursor para panteon-frontend
+
+## 🚫 REGLA ESTRICTA DE ICONOGRAFÍA
+- **Cero emojis en la interfaz de usuario.**
+- Usar siempre componentes de **`lucide-react`** (`^1.34.0`).
+
+## 🎨 ESTILO Y DISEÑO
+- **Tailwind CSS v4** obligatorio en todos los componentes (`className="..."`).
+- Prohibido el uso de objetos de estilo inline `style={{...}}`.
+- Seguir la paleta institucional: `blue-600`/`blue-700`, `slate-800`/`slate-900`, `emerald-600`, `rose-600`, `amber-600`.
+
+## ⚙️ Directrices de Código
+- React 19 + Vite 8 ESM (`"type": "module"`).
+- Actualizaciones de estado inmutables.
+- Idioma español en toda la interfaz y variables de negocio.

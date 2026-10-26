@@ -1,0 +1,28 @@
+========================================================================
+       SISTEMA DE GESTION CATASTRAL Y FINANCIERA - PANTEON LA SOLEDAD
+========================================================================
+
+INSTRUCCIONES PARA INSTALAR Y USAR EN CUALQUIER COMPUTADORA:
+
+1. COPIAR LA CARPETA
+   Copia esta carpeta completa ("Panteon La Soledad") en la computadora
+   donde vayas a trabajar (por ejemplo, en el Escritorio o en Documentos).
+
+2. EJECUTAR EL PROGRAMA
+   Haz doble clic sobre el archivo:
+      -> "PanteonLaSoledad.exe"  (o "Iniciar_Panteon.bat")
+
+3. LISTO PARA TRABAJAR
+   - El sistema se abrira automaticamente en una ventana de aplicacion limpia.
+   - Ya cuenta con los 2,665 espacios catastrales, 2,531 difuntos vinculados 
+     y el corte de caja con saldo inicial de $150,000.00 MXN (Julio 2026).
+   - Funciona 100% sin conexion a internet y no requiere instalar Node.js ni nada adicional.
+
+4. CERRAR EL PROGRAMA
+   Para apagar el sistema cuando termines tu jornada, simplemente cierra 
+   la ventana del programa.
+
+------------------------------------------------------------------------
+Nombre Oficial: Panteon La Soledad
+Ubicacion: San Francisco Tepojaco, Cuautitlan Izcalli, Edo. Mex.
+========================================================================

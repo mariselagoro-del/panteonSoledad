@@ -1,0 +1,28 @@
+---
+description: Reglas y estándares oficiales para el proyecto Panteón Frontend
+globs: **/*
+---
+
+# Reglas Oficiales de Desarrollo - Panteón Frontend
+
+## 🚫 REGLA CRÍTICA DE ICONOGRAFÍA
+- **PROHIBIDO EL USO DE EMOJIS EN TODA LA APLICACIÓN**.
+- Utilizar exclusivamente componentes de **`lucide-react`** (`^1.34.0`).
+- No insertar emojis Unicode en títulos, botones, badges, modales o tarjetas.
+
+## 🎨 ESTÁNDAR DE ESTILOS: TAILWIND CSS
+- Toda la maquetación se realiza con **Tailwind CSS v4** mediante `className="..."`.
+- Evitar objetos inline `style={{...}}`.
+- Estilos base configurados en `src/index.css` (`@import "tailwindcss";`).
+
+## 📁 Arquitectura de Carpetas
+- `src/components/common/`: Componentes comunes y de interfaz (`Navbar`, `StatsCards`, `ContextMenu`).
+- `src/components/modals/`: Modales interactivos (`ModalRegistroFosa`, `ModalEditarFosa`).
+- `src/pages/`: Vistas de pestañas (`ControlEspacios`, `PlanoGeneral`, `ReportesIngresos`, `Dashboard`).
+- `src/constants/`: Constantes y datos iniciales (`panteonData.js`).
+- `src/services/`: Capa de transporte y consultas HTTP (`panteonService.js`).
+
+## ⚙️ Estándares Técnicos
+- **Framework**: React 19 + Vite 8 + Tailwind CSS v4.
+- **Inmutabilidad**: Actualizaciones de estado funcionales e inmutables.
+- **Idioma**: Todas las interfaces, nombres de variables de negocio y comentarios en **español**.
