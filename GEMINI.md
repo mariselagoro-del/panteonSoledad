@@ -36,6 +36,15 @@ Este archivo proporciona el contexto completo de arquitectura, directrices y est
 
 ---
 
+## REGLA DE SINCRONIZACIÓN CONTINUA CON GITHUB
+
+> [!IMPORTANT]
+> **SUBIR TODOS LOS CAMBIOS A GITHUB DE FORMA INMEDIATA.**
+> - Cada vez que se realice un cambio, modificación o mejora en el código, el agente debe hacer `git commit` y `git push origin main` automáticamente.
+> - Esto mantiene el despliegue en la nube (Render) siempre actualizado y sincronizado en tiempo real.
+
+---
+
 ## 🏛️ Propósito y Alcance
 
 **`panteon-frontend`** es el cliente web para la gestión administrativa, cartográfica y financiera del **Panteón La Soledad (fundado en 1908)**.

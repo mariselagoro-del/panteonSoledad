@@ -28,7 +28,15 @@ Referencia universal para cualquier agente inteligente o asistente de código en
 > - Utilizar exclusivamente **Tailwind CSS v4** con clases utilitarias (`className="..."`).
 > - No emplear objetos de estilo JS inline.
 
+## REGLA DE SINCRONIZACIÓN CONTINUA CON GITHUB
+
+> [!IMPORTANT]
+> **SUBIR TODOS LOS CAMBIOS A GITHUB DE FORMA INMEDIATA.**
+> - Cada vez que se realice un cambio, modificación o mejora en el código, el agente debe hacer `git commit` y `git push origin main` automáticamente.
+> - Esto mantiene el despliegue en la nube (Render) siempre actualizado y sincronizado en tiempo real.
+
 ---
+
 
 ## 🧭 Mapa Rápido del Repositorio
 
