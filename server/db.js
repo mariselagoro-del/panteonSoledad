@@ -54,14 +54,20 @@ async function asegurarBaseDeDatosExiste() {
   }
 }
 
+// En Render, las conexiones internas (red privada dpg-...) no usan SSL; conexiones externas sí
+const useSsl = isCloudDb && (
+  process.env.DATABASE_URL.includes('.render.com') ||
+  process.env.DATABASE_URL.includes('neon.tech') ||
+  process.env.DATABASE_URL.includes('supabase.co') ||
+  process.env.DATABASE_URL.includes('sslmode=require')
+);
+
 // Configuración del Pool principal (Soporta DATABASE_URL en la nube o variables individuales en local)
 export const pool = new Pool(
   isCloudDb
     ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: {
-          rejectUnauthorized: false
-        },
+        ssl: useSsl ? { rejectUnauthorized: false } : false,
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,

@@ -425,11 +425,18 @@ app.get('*', (req, res, next) => {
 
 // Iniciar servidor tras conectar a la base de datos
 async function startServer() {
-  await initDb();
-  await poblarBaseDeDatos();
-  app.listen(PORT, () => {
-    console.log(`[API Server] Servidor backend escuchando en http://localhost:${PORT}`);
+  try {
+    await initDb();
+    await poblarBaseDeDatos();
+  } catch (err) {
+    console.warn('[Server] Nota durante inicialización de base de datos:', err.message);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[API Server] Servidor backend escuchando en http://0.0.0.0:${PORT}`);
   });
 }
 
-startServer();
+startServer().catch(err => {
+  console.error('[Server] Error crítico en startServer:', err);
+});

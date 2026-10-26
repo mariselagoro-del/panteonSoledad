@@ -7,8 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export async function poblarBaseDeDatos() {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const checkRes = await client.query('SELECT COUNT(*) FROM espacios');
     const totalActual = parseInt(checkRes.rows[0].count, 10);
     console.log(`[Seed] Total de espacios actuales en PostgreSQL: ${totalActual}`);
@@ -23,8 +24,10 @@ export async function poblarBaseDeDatos() {
       }
     }
   } catch (err) {
-    console.error('[Seed] Error al poblar base de datos:', err);
+    console.error('[Seed] Error al poblar base de datos:', err.message);
   } finally {
-    client.release();
+    if (client) {
+      try { client.release(); } catch { /* ignore release error */ }
+    }
   }
 }
