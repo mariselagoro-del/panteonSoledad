@@ -5,7 +5,6 @@ import {
   Search, 
   CircleDollarSign, 
   BarChart3, 
-  Settings, 
   Map, 
   ChevronRight, 
   X,
@@ -56,12 +55,6 @@ export default function Sidebar({
       id: 'reportes',
       label: 'Reportes',
       icon: BarChart3,
-      hasChevron: true
-    },
-    {
-      id: 'importador',
-      label: 'Configuración',
-      icon: Settings,
       hasChevron: true
     }
   ];

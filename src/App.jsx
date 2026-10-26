@@ -19,7 +19,6 @@ import ControlEspacios from './pages/ControlEspacios';
 import PlanoGeneral from './pages/PlanoGeneral';
 import FinanzasCaja from './pages/FinanzasCaja';
 import ReportesIngresos from './pages/ReportesIngresos';
-import ImportadorExcel from './pages/ImportadorExcel';
 
 // Servicios de persistencia y base de datos
 import { panteonService } from './services/panteonService';
@@ -29,8 +28,7 @@ import {
   SECCIONES_INICIALES, 
   DISTRIBUCION_PLANO_INICIAL, 
   REGISTROS_FOSAS_INICIALES,
-  MOVIMIENTOS_FINANCIEROS_INICIALES,
-  METADATA_PANTEON
+  MOVIMIENTOS_FINANCIEROS_INICIALES
 } from './constants/panteonData';
 
 export default function App() {
@@ -48,7 +46,7 @@ export default function App() {
   });
 
   // 2. Estado de Navegación y UI
-  const [pestanaActiva, setPestanaActiva] = useState('dashboard'); // 'dashboard' | 'espacios' | 'busqueda' | 'mapa' | 'finanzas' | 'reportes' | 'importador'
+  const [pestanaActiva, setPestanaActiva] = useState('dashboard'); // 'dashboard' | 'espacios' | 'busqueda' | 'mapa' | 'finanzas' | 'reportes'
   const [menuColapsado, setMenuColapsado] = useState(false);
   const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const [busquedaGlobal, setBusquedaGlobal] = useState('');
@@ -366,23 +364,6 @@ export default function App() {
                 secciones={secciones}
                 movimientosFinancieros={movimientosFinancieros}
                 onVolver={() => setPestanaActiva('dashboard')}
-              />
-            )}
-
-            {/* Vista 6: Sincronizador de Excel */}
-            {pestanaActiva === 'importador' && (
-              <ImportadorExcel
-                metadata={METADATA_PANTEON}
-                totalEspacios={registrosFosas.length}
-                totalDifuntos={registrosFosas.reduce((acc, r) => acc + (r.historialDifuntos?.length || 0), 0)}
-                onRecargarDatos={async () => {
-                  const [fosasDB, movsDB] = await Promise.all([
-                    panteonService.obtenerEspacios(),
-                    panteonService.obtenerMovimientosFinancieros()
-                  ]);
-                  setRegistrosFosas(fosasDB);
-                  setMovimientosFinancieros(movsDB);
-                }}
               />
             )}
 

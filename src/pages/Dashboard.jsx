@@ -22,7 +22,7 @@ import {
   Search, 
   BarChart3, 
   Map, 
-  Database,
+  Folder,
   Sprout
 } from 'lucide-react';
 import bannerPanteon from '../assets/banner-panteon.jpg';
@@ -650,27 +650,41 @@ export default function Dashboard({
               </span>
             </button>
 
-            {/* 2. Buscar tumba */}
+            {/* 2. Padrón de registros */}
             <button
               type="button"
               onClick={() => onCambiarPestana('espacios')}
               className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
             >
               <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-colors">
-                <Search className="w-4 h-4" />
+                <Folder className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Buscar tumba
+                Padrón de registros
               </span>
             </button>
 
-            {/* 3. Registrar pago */}
+            {/* 3. Búsqueda avanzada */}
+            <button
+              type="button"
+              onClick={() => onCambiarPestana('busqueda')}
+              className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center transition-colors">
+                <Search className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                Búsqueda avanzada
+              </span>
+            </button>
+
+            {/* 4. Registrar pago */}
             <button
               type="button"
               onClick={() => onCambiarPestana('finanzas')}
               className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
             >
-              <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center transition-colors">
+              <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center transition-colors">
                 <CircleDollarSign className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
@@ -678,7 +692,7 @@ export default function Dashboard({
               </span>
             </button>
 
-            {/* 4. Generar reporte */}
+            {/* 5. Generar reporte */}
             <button
               type="button"
               onClick={() => onCambiarPestana('reportes')}
@@ -692,7 +706,7 @@ export default function Dashboard({
               </span>
             </button>
 
-            {/* 5. Ver mapa del panteón */}
+            {/* 6. Ver plano general */}
             <button
               type="button"
               onClick={() => onCambiarPestana('mapa')}
@@ -702,21 +716,7 @@ export default function Dashboard({
                 <Map className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Ver mapa del panteón
-              </span>
-            </button>
-
-            {/* 6. Respaldar datos */}
-            <button
-              type="button"
-              onClick={() => onCambiarPestana('importador')}
-              className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
-            >
-              <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-700 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center transition-colors">
-                <Database className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Respaldar datos
+                Ver plano general
               </span>
             </button>
 
