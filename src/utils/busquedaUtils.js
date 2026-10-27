@@ -123,6 +123,8 @@ export function coincideEspacioConBusqueda(espacio, query) {
     espacio.titularDireccion || '',
     espacio.seccionNombre || '',
     espacio.tipoEspacio || '',
+    espacio.tipoConstruccion || '',
+    espacio.fechaSellado || '',
     espacio.observaciones || ''
   ].join(' ');
 

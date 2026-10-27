@@ -102,6 +102,8 @@ app.get('/api/espacios', async (req, res) => {
         tipoEspacio: row.tipo,
         seccionNombre: row.seccion,
         numeroEspacio: row.numero_fosa,
+        tipoConstruccion: row.tipo_construccion || 'Sencilla',
+        fechaSellado: row.fecha_sellado ? new Date(row.fecha_sellado).toISOString().split('T')[0] : null,
         titularNombre: row.titular_nombre_completo || '',
         titularTelefono: row.titular_telefono || '',
         titularCorreo: row.titular_correo || '',
@@ -158,10 +160,13 @@ app.post('/api/espacios', async (req, res) => {
       }
     }
 
+    const tipoConstruccionFinal = (espacio.tipoConstruccion === 'Sellada') ? 'Sellada' : 'Sencilla';
+    const fechaSelladoFinal = (tipoConstruccionFinal === 'Sellada' && espacio.fechaSellado) ? espacio.fechaSellado : null;
+
     // 2. Espacio
     const espRes = await client.query(
-      `INSERT INTO espacios (codigo, tipo, seccion, numero_fosa, titular_id, estatus_ocupacion, estatus_pago, coordenadas, observaciones)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO espacios (codigo, tipo, seccion, numero_fosa, titular_id, estatus_ocupacion, estatus_pago, coordenadas, observaciones, tipo_construccion, fecha_sellado)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT (codigo) DO UPDATE SET
          tipo = EXCLUDED.tipo,
          seccion = EXCLUDED.seccion,
@@ -169,7 +174,9 @@ app.post('/api/espacios', async (req, res) => {
          titular_id = COALESCE(EXCLUDED.titular_id, espacios.titular_id),
          estatus_ocupacion = EXCLUDED.estatus_ocupacion,
          estatus_pago = EXCLUDED.estatus_pago,
-         observaciones = EXCLUDED.observaciones
+         observaciones = EXCLUDED.observaciones,
+         tipo_construccion = EXCLUDED.tipo_construccion,
+         fecha_sellado = EXCLUDED.fecha_sellado
        RETURNING id`,
       [
         codigoUpper,
@@ -180,7 +187,9 @@ app.post('/api/espacios', async (req, res) => {
         espacio.estatusOcupacion || 'Disponible',
         espacio.estatusPago || 'Al Corriente',
         espacio.coordenadas || '',
-        espacio.observaciones || ''
+        espacio.observaciones || '',
+        tipoConstruccionFinal,
+        fechaSelladoFinal
       ]
     );
 

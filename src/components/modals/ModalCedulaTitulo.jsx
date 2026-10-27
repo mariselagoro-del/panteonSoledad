@@ -109,7 +109,7 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
           {/* Ficha Técnica del Espacio */}
           <div className="bg-white p-5 rounded-2xl border-2 border-cream-300 space-y-3 font-sans text-xs shadow-2xs">
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-b border-cream-200 pb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 border-b border-cream-200 pb-3">
               <div>
                 <span className="block text-stone-500 font-bold text-[10px] uppercase">Código / Lote:</span>
                 <span className="font-mono font-black text-base text-teal-900">{espacio.codigo}</span>
@@ -121,6 +121,14 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
               <div>
                 <span className="block text-stone-500 font-bold text-[10px] uppercase">Tipo de Espacio:</span>
                 <span className="font-bold text-stone-800">{espacio.tipoEspacio}</span>
+              </div>
+              <div>
+                <span className="block text-stone-500 font-bold text-[10px] uppercase">Construcción:</span>
+                <span className="font-bold text-stone-800">
+                  {espacio.tipoConstruccion === 'Sellada' 
+                    ? `Sellada${espacio.fechaSellado ? ` (${espacio.fechaSellado})` : ''}` 
+                    : 'Sencilla'}
+                </span>
               </div>
               <div>
                 <span className="block text-stone-500 font-bold text-[10px] uppercase">Estatus de Cobro:</span>

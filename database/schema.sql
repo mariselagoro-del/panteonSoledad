@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS espacios (
     estatus_pago VARCHAR(30) DEFAULT 'Al Corriente' CHECK (estatus_pago IN ('Al Corriente', 'Con Adeudo', 'Exento')),
     coordenadas VARCHAR(100),
     observaciones TEXT,
+    tipo_construccion VARCHAR(30) DEFAULT 'Sencilla' CHECK (tipo_construccion IN ('Sencilla', 'Sellada')),
+    fecha_sellado DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

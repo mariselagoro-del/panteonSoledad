@@ -547,6 +547,7 @@ export default function App() {
       {/* Modal de Edición de Fosa */}
       {registroAEditar && (
         <ModalEditarFosa
+          key={registroAEditar.id || registroAEditar.codigo}
           registro={registroAEditar}
           onClose={() => setRegistroAEditar(null)}
           onGuardar={handleActualizarRegistro}

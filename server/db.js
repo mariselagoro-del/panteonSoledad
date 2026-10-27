@@ -126,6 +126,8 @@ export async function initDb() {
           estatus_pago VARCHAR(30) DEFAULT 'Al Corriente',
           coordenadas VARCHAR(100),
           observaciones TEXT,
+          tipo_construccion VARCHAR(30) DEFAULT 'Sencilla',
+          fecha_sellado DATE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -208,6 +210,10 @@ export async function initDb() {
       CREATE INDEX IF NOT EXISTS idx_espacios_codigo ON espacios(codigo);
       CREATE INDEX IF NOT EXISTS idx_documentos_codigo ON documentos_expediente(codigo_espacio);
       CREATE INDEX IF NOT EXISTS idx_documentos_doc_id ON documentos_expediente(doc_id);
+
+      -- Migración continua de campos: Sellado / Construcción
+      ALTER TABLE espacios ADD COLUMN IF NOT EXISTS tipo_construccion VARCHAR(30) DEFAULT 'Sencilla';
+      ALTER TABLE espacios ADD COLUMN IF NOT EXISTS fecha_sellado DATE;
     `);
 
     client.release();

@@ -13,7 +13,8 @@ import {
   Eye,
   CheckCircle2,
   AlertCircle,
-  History
+  History,
+  Layers
 } from 'lucide-react';
 import { calcularEstadoExpediente } from '../../constants/expedienteConfig';
 import { obtenerHistorialPagosFosa } from '../../utils/pagosUtils';
@@ -34,6 +35,8 @@ export default function ModalEditarFosa({
     codigo: itemActual?.codigo || '',
     seccionNombre: itemActual?.seccionNombre || 'Sección 1',
     tipoEspacio: itemActual?.tipoEspacio || 'Fosa',
+    tipoConstruccion: itemActual?.tipoConstruccion || 'Sencilla',
+    fechaSellado: itemActual?.fechaSellado || '',
     estatusPago: itemActual?.estatusPago || 'Al Corriente',
     titularNombre: itemActual?.titularNombre || '',
     titularTelefono: itemActual?.titularTelefono || '',
@@ -129,7 +132,9 @@ export default function ModalEditarFosa({
     if (onGuardar) {
       onGuardar({
         ...itemActual,
-        ...formData
+        ...formData,
+        tipoConstruccion: formData.tipoConstruccion || 'Sencilla',
+        fechaSellado: formData.tipoConstruccion === 'Sellada' ? formData.fechaSellado : null
       });
     }
     handleClose();
@@ -203,6 +208,81 @@ export default function ModalEditarFosa({
                 <option value="Al Corriente">Al Corriente</option>
                 <option value="Con Adeudo">Con Adeudo</option>
               </select>
+            </div>
+          </div>
+
+          {/* Fila: Estado de Construcción de la Tumba (Sencilla / Sellada) y Fecha de Sellado */}
+          <div className="p-4 bg-cream-50/70 rounded-2xl border border-cream-300 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-black text-teal-900">
+                <Layers className="w-4 h-4 text-teal-600" />
+                <span>Estado de Construcción / Sellado</span>
+              </div>
+              <span className="text-[10px] text-stone-500 font-medium hidden sm:inline">
+                Especifica si la fosa está sellada o es sencilla
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Selector Sencilla vs Sellada */}
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Condición de la Tumba *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, tipoConstruccion: 'Sencilla', fechaSellado: '' }))}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer font-bold flex items-center justify-center gap-1.5 ${
+                      formData.tipoConstruccion === 'Sencilla'
+                        ? 'bg-teal-700 text-white border-teal-800 shadow-xs'
+                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                    }`}
+                  >
+                    <span>Sencilla</span>
+                    {formData.tipoConstruccion === 'Sencilla' && <CheckCircle2 className="w-3.5 h-3.5 text-cream-200" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ 
+                      ...prev, 
+                      tipoConstruccion: 'Sellada',
+                      fechaSellado: prev.fechaSellado || new Date().toISOString().split('T')[0]
+                    }))}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer font-bold flex items-center justify-center gap-1.5 ${
+                      formData.tipoConstruccion === 'Sellada'
+                        ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
+                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                    }`}
+                  >
+                    <span>Sellada</span>
+                    {formData.tipoConstruccion === 'Sellada' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-100" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Fecha de Sellado (Condicional si está sellada) */}
+              {formData.tipoConstruccion === 'Sellada' ? (
+                <div className="space-y-1 animate-fadeIn">
+                  <label className="block font-bold text-stone-700 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Fecha en que se Selló *</span>
+                  </label>
+                  <input
+                    type="date"
+                    required={formData.tipoConstruccion === 'Sellada'}
+                    value={formData.fechaSellado}
+                    onChange={(e) => setFormData({ ...formData, fechaSellado: e.target.value })}
+                    className="w-full bg-white border border-amber-300 rounded-xl p-2.5 text-stone-900 font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  />
+                  <span className="text-[10px] text-amber-800 block">
+                    Fecha de sellado definitivo o losa colocada.
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center text-[11px] text-stone-500 p-2.5 bg-white/70 rounded-xl border border-dashed border-cream-300">
+                  <span>Tumba estándar en tierra (sin sellar).</span>
+                </div>
+              )}
             </div>
           </div>
 

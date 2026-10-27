@@ -42,6 +42,7 @@ export default function ControlEspacios({
 }) {
   const [busquedaLocal, setBusquedaLocal] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('Todos'); // 'Todos' | 'Fosa' | 'Nicho'
+  const [filtroConstruccion, setFiltroConstruccion] = useState('Todas'); // 'Todas' | 'Sencilla' | 'Sellada'
   const [filtroPago, setFiltroPago] = useState('Todos'); // 'Todos' | 'Al Corriente' | 'Con Adeudo'
   const [filtroOcupacion, setFiltroOcupacion] = useState('Todos'); // 'Todos' | 'Ocupado' | 'Disponible'
   const [filtroExpediente, setFiltroExpediente] = useState('Todos'); // 'Todos' | 'Completo' | 'Incompleto' | 'Sin Documentacion'
@@ -96,26 +97,30 @@ export default function ControlEspacios({
       // 2. Filtro Tipo
       const matchTipo = filtroTipo === 'Todos' || r.tipoEspacio === filtroTipo;
 
-      // 3. Filtro Pago
+      // 3. Filtro Construcción / Sellado
+      const tipoConstruccionActual = r.tipoConstruccion || 'Sencilla';
+      const matchConstruccion = filtroConstruccion === 'Todas' || tipoConstruccionActual === filtroConstruccion;
+
+      // 4. Filtro Pago
       const matchPago = filtroPago === 'Todos' || r.estatusPago === filtroPago;
 
-      // 4. Filtro Ocupación
+      // 5. Filtro Ocupación
       const ocupado = r.historialDifuntos?.length > 0 || r.estatusOcupacion === 'Ocupado';
       const matchOcupacion = filtroOcupacion === 'Todos' || 
         (filtroOcupacion === 'Ocupado' && ocupado) || 
         (filtroOcupacion === 'Disponible' && !ocupado);
 
-      // 5. Filtro Expediente
+      // 6. Filtro Expediente
       const estadoExp = calcularEstadoExpediente(r.expediente);
       const matchExpediente = filtroExpediente === 'Todos' ||
         (filtroExpediente === 'Completo' && estadoExp.estatus === 'Completo') ||
         (filtroExpediente === 'Incompleto' && estadoExp.estatus === 'Incompleto') ||
         (filtroExpediente === 'Sin Documentacion' && estadoExp.estatus === 'Sin Documentación');
 
-      // 6. Búsqueda inteligente (todos los difuntos, orden de palabras independiente, sin acentos)
+      // 7. Búsqueda inteligente (todos los difuntos, orden de palabras independiente, sin acentos)
       const resBusqueda = coincideEspacioConBusqueda(r, busqueda);
 
-      if (matchSeccion && matchTipo && matchPago && matchOcupacion && matchExpediente && resBusqueda.coincide) {
+      if (matchSeccion && matchTipo && matchConstruccion && matchPago && matchOcupacion && matchExpediente && resBusqueda.coincide) {
         return {
           ...r,
           _difuntoCoincidente: resBusqueda.difuntoCoincidente,
@@ -124,7 +129,7 @@ export default function ControlEspacios({
       }
       return null;
     }).filter(Boolean);
-  }, [registrosFosas, seccionSeleccionada, filtroTipo, filtroPago, filtroOcupacion, filtroExpediente, busqueda]);
+  }, [registrosFosas, seccionSeleccionada, filtroTipo, filtroConstruccion, filtroPago, filtroOcupacion, filtroExpediente, busqueda]);
 
   // Paginación
   const totalRegistros = registrosFiltrados.length;
@@ -271,24 +276,44 @@ export default function ControlEspacios({
 
         </div>
 
-        {/* Chips de Estado de Ocupación */}
+        {/* Chips de Estado de Ocupación y Condición de Tumba */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-cream-200 text-xs">
-          <div className="flex items-center gap-1.5 font-semibold text-stone-600">
-            <span className="text-[11px] text-stone-400 mr-1">Ocupación:</span>
-            {['Todos', 'Ocupado', 'Disponible'].map(est => (
-              <button
-                key={est}
-                type="button"
-                onClick={() => handleCambiarFiltro(setFiltroOcupacion, est)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  filtroOcupacion === est
-                    ? 'bg-teal-500 text-white shadow-2xs'
-                    : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
-                }`}
-              >
-                {est}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1.5 font-semibold text-stone-600">
+              <span className="text-[11px] text-stone-400 mr-1">Ocupación:</span>
+              {['Todos', 'Ocupado', 'Disponible'].map(est => (
+                <button
+                  key={est}
+                  type="button"
+                  onClick={() => handleCambiarFiltro(setFiltroOcupacion, est)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    filtroOcupacion === est
+                      ? 'bg-teal-500 text-white shadow-2xs'
+                      : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
+                  }`}
+                >
+                  {est}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1.5 font-semibold text-stone-600">
+              <span className="text-[11px] text-stone-400 mr-1">Condición:</span>
+              {['Todas', 'Sencilla', 'Sellada'].map(cond => (
+                <button
+                  key={cond}
+                  type="button"
+                  onClick={() => handleCambiarFiltro(setFiltroConstruccion, cond)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    filtroConstruccion === cond
+                      ? 'bg-amber-600 text-white shadow-2xs'
+                      : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
+                  }`}
+                >
+                  {cond}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="text-[11px] text-stone-500">
@@ -346,10 +371,25 @@ export default function ControlEspacios({
                         </div>
                       </td>
 
-                      {/* Sección y Tipo */}
+                      {/* Sección, Tipo y Sellado */}
                       <td className="py-3 px-4">
                         <div className="font-bold text-stone-800">{item.seccionNombre}</div>
-                        <div className="text-[10px] text-stone-400 font-medium">{item.tipoEspacio}</div>
+                        <div className="text-[10px] text-stone-500 font-medium flex items-center gap-1.5 flex-wrap mt-0.5">
+                          <span>{item.tipoEspacio}</span>
+                          <span>•</span>
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded font-bold ${
+                            item.tipoConstruccion === 'Sellada'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : 'bg-cream-100 text-stone-700 border border-cream-300'
+                          }`}>
+                            {item.tipoConstruccion === 'Sellada' ? 'Sellada' : 'Sencilla'}
+                          </span>
+                        </div>
+                        {item.tipoConstruccion === 'Sellada' && item.fechaSellado && (
+                          <div className="text-[9px] text-amber-800 font-semibold mt-0.5">
+                            Sellada: {item.fechaSellado}
+                          </div>
+                        )}
                       </td>
 
                       {/* Titular */}
