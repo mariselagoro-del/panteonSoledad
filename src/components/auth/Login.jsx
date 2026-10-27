@@ -34,14 +34,32 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
       const usuarioLimpio = usuario.trim().toLowerCase();
       const passLimpia = contrasena.trim();
 
+      // 1. Usuario Administrador (Acceso total incluyendo contabilidad)
       if (
-        (usuarioLimpio === 'admin' && (passLimpia === 'admin' || passLimpia === 'panteon' || passLimpia === 'soledad')) ||
+        (usuarioLimpio === 'admin' && (passLimpia === 'admin' || passLimpia === 'panteon' || passLimpia === 'soledad' || passLimpia === 'admin123')) ||
         (usuarioLimpio === 'administrador' && (passLimpia === 'admin' || passLimpia === 'panteon'))
       ) {
         onLogin({
           nombre: 'Administrador General',
           usuario: usuarioLimpio,
-          rol: 'Administrador Unipersonal',
+          rol: 'admin',
+          rolEtiqueta: 'Administrador General',
+          permisos: { contabilidad: true, catastro: true },
+          recordar: recordarSesion
+        });
+      } 
+      // 2. Nuevo Usuario Operador (Acceso completo a todo el sistema EXCEPTO contabilidad)
+      else if (
+        (usuarioLimpio === 'operador' && (passLimpia === 'operador' || passLimpia === 'panteon' || passLimpia === '1234' || passLimpia === 'soledad')) ||
+        (usuarioLimpio === 'auxiliar' && (passLimpia === 'auxiliar' || passLimpia === 'panteon' || passLimpia === '1234')) ||
+        (usuarioLimpio === 'recepcion' && (passLimpia === 'recepcion' || passLimpia === 'panteon' || passLimpia === '1234'))
+      ) {
+        onLogin({
+          nombre: 'Operador de Catastro',
+          usuario: usuarioLimpio,
+          rol: 'operador',
+          rolEtiqueta: 'Operador Catastral',
+          permisos: { contabilidad: false, catastro: true },
           recordar: recordarSesion
         });
       } else {

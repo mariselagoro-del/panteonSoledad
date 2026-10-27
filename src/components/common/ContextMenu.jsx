@@ -11,7 +11,8 @@ export default function ContextMenu({
   onImprimirTitulo,
   onAbrirExpediente,
   onAbrirHistorial,
-  onClose
+  onClose,
+  esAdmin = true
 }) {
   const menuRef = useRef(null);
 
@@ -58,8 +59,8 @@ export default function ContextMenu({
           <span>Adjuntar / Expediente Digital</span>
         </button>
 
-        {/* Opción rápida: Registrar que Ya Pagó (Recibo Físico) */}
-        {registro.estatusPago === 'Con Adeudo' && (
+        {/* Opciones Financieras (Solo Administrador) */}
+        {esAdmin && registro.estatusPago === 'Con Adeudo' && (
           <button
             type="button"
             onClick={() => { if (onAbrirHistorial) onAbrirHistorial(registro, { filtro: 'Adeudos' }); onClose(); }}
@@ -70,25 +71,29 @@ export default function ContextMenu({
           </button>
         )}
 
-        {/* 3. Emitir Recibo de Pago */}
-        <button
-          type="button"
-          onClick={() => { if (onEmitirRecibo) onEmitirRecibo(registro); onClose(); }}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-cream-100 text-stone-700 hover:text-stone-900 transition-colors text-left cursor-pointer"
-        >
-          <Receipt className="w-4 h-4 text-olive-600" />
-          <span>Emitir Recibo de Pago</span>
-        </button>
+        {/* 3. Emitir Recibo de Pago (Solo Administrador) */}
+        {esAdmin && (
+          <button
+            type="button"
+            onClick={() => { if (onEmitirRecibo) onEmitirRecibo(registro); onClose(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-cream-100 text-stone-700 hover:text-stone-900 transition-colors text-left cursor-pointer"
+          >
+            <Receipt className="w-4 h-4 text-olive-600" />
+            <span>Emitir Recibo de Pago</span>
+          </button>
+        )}
 
-        {/* 4. Historial de Pagos y Refrendos */}
-        <button
-          type="button"
-          onClick={() => { if (onAbrirHistorial) onAbrirHistorial(registro); onClose(); }}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-teal-50 text-stone-700 hover:text-teal-900 transition-colors text-left cursor-pointer"
-        >
-          <History className="w-4 h-4 text-teal-600" />
-          <span>Historial de Pagos</span>
-        </button>
+        {/* 4. Historial de Pagos y Refrendos (Solo Administrador) */}
+        {esAdmin && (
+          <button
+            type="button"
+            onClick={() => { if (onAbrirHistorial) onAbrirHistorial(registro); onClose(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-teal-50 text-stone-700 hover:text-teal-900 transition-colors text-left cursor-pointer"
+          >
+            <History className="w-4 h-4 text-teal-600" />
+            <span>Historial de Pagos</span>
+          </button>
+        )}
 
         {/* 5. Editar Lote / Difuntos */}
         <button

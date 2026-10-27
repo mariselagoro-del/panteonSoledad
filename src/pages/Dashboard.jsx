@@ -22,10 +22,38 @@ import {
   Search, 
   BarChart3, 
   Map, 
-  Folder,
-  Sprout
+  Folder, 
+  Sprout, 
+  Layers, 
+  Eye 
 } from 'lucide-react';
 import bannerPanteon from '../assets/banner-panteon.jpg';
+
+// Tooltip flotante para la gráfica de condición de tumbas (Sencillas vs Selladas)
+function TooltipBarrasCondicion({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  const item = payload[0];
+
+  return (
+    <div className="bg-[#152822] border border-[#2D6A4F] px-3.5 py-2.5 rounded-xl shadow-2xl pointer-events-none select-none min-w-[140px] z-50">
+      <p className="text-[11px] font-bold text-white tracking-wide uppercase mb-1">
+        {item.payload?.concepto || label}
+      </p>
+      <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-white/15">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0 ring-1 ring-white/40"
+            style={{ backgroundColor: item.payload?.color || '#2D6A4F' }}
+          />
+          <span className="text-[11px] font-medium text-white/90">Espacios:</span>
+        </div>
+        <span className="text-xs font-black text-white font-mono">
+          {Number(item.value).toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 // Tooltip flotante a un lado para la gráfica de dona (Distribución de tumbas por sección)
 function TooltipDonaSeccion({ active, payload, coordinate }) {
@@ -93,8 +121,46 @@ export default function Dashboard({
   registrosFosas = [],
   movimientosFinancieros = [],
   onCambiarPestana,
-  onAbrirModalRegistro
+  onAbrirModalRegistro,
+  esAdmin = true
 }) {
+  // Métricas de tumbas selladas y condición estructural
+  const totalTumbasSelladas = useMemo(() => {
+    return (registrosFosas || []).filter(r => r.tipoConstruccion === 'Sellada').length;
+  }, [registrosFosas]);
+
+  const datosCondicionTumbas = useMemo(() => {
+    const selladas = (registrosFosas || []).filter(r => r.tipoConstruccion === 'Sellada').length;
+    const nichos = (registrosFosas || []).filter(r => r.tipoEspacio === 'Nicho').length;
+    const total = (registrosFosas || []).length || 2561;
+    const sencillas = Math.max(0, total - selladas - nichos);
+    return [
+      { concepto: 'Sencillas', cantidad: sencillas, color: '#2D6A4F' },
+      { concepto: 'Selladas', cantidad: selladas, color: '#D4A373' },
+      { concepto: 'Nichos', cantidad: nichos, color: '#40916C' }
+    ];
+  }, [registrosFosas]);
+
+  // Lista de tumbas recientes para el usuario operador
+  const expedientesRecientes = useMemo(() => {
+    if (registrosFosas && registrosFosas.length > 0) {
+      return registrosFosas.slice(0, 5).map((r, i) => ({
+        id: r.id || i,
+        codigo: r.codigo || `F-${i + 1}`,
+        titular: r.titularNombre || 'Sin titular',
+        condicion: r.tipoConstruccion === 'Sellada' ? 'Sellada' : 'Sencilla',
+        seccion: r.seccionNombre || 'Sec. 1'
+      }));
+    }
+    return [
+      { id: 1, codigo: 'F-104', titular: 'Juan Carlos Pérez', condicion: 'Sellada', seccion: 'Sec. 1' },
+      { id: 2, codigo: 'F-089', titular: 'María Elena Gómez', condicion: 'Sencilla', seccion: 'Sec. 2' },
+      { id: 3, codigo: 'N-012', titular: 'Roberto Mendoza', condicion: 'Sencilla', seccion: 'Nichos' },
+      { id: 4, codigo: 'F-201', titular: 'Ana Rosa Morales', condicion: 'Sellada', seccion: 'Sec. 3' },
+      { id: 5, codigo: 'F-145', titular: 'Carlos Slim H.', condicion: 'Sencilla', seccion: 'Sec. 1' }
+    ];
+  }, [registrosFosas]);
+
   // Métricas reales calculadas desde el padrón
   const totalTumbasRegistradas = useMemo(() => {
     return (registrosFosas || []).filter(r => r.tipoEspacio === 'Fosa' || !r.tipoEspacio).length || 2561;
@@ -319,26 +385,48 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* KPI 3: Pagos registrados */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                Pagos Registrados
-              </p>
-              <h3 className="text-2xl sm:text-3xl font-black text-stone-900 mt-1 tracking-tight">
-                $ {totalIngresos.toLocaleString()}
-              </h3>
+        {/* KPI 3: Pagos registrados (Admin) / Tumbas Selladas (Operador) */}
+        {esAdmin ? (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Pagos Registrados
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-black text-stone-900 mt-1 tracking-tight">
+                  $ {totalIngresos.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-11 h-11 rounded-full bg-stone-100 text-stone-900 flex items-center justify-center border border-stone-200 shrink-0">
+                <CircleDollarSign className="w-5 h-5" />
+              </div>
             </div>
-            <div className="w-11 h-11 rounded-full bg-stone-100 text-stone-900 flex items-center justify-center border border-stone-200 shrink-0">
-              <CircleDollarSign className="w-5 h-5" />
+            <div className="mt-4 pt-3 border-t border-stone-100 text-xs text-stone-500 flex items-center justify-between">
+              <span>Ingresos recaudados</span>
+              <strong className="text-stone-800 font-bold">$ {totalIngresos.toLocaleString()}</strong>
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-stone-100 text-xs text-stone-500 flex items-center justify-between">
-            <span>Ingresos recaudados</span>
-            <strong className="text-stone-800 font-bold">$ {totalIngresos.toLocaleString()}</strong>
+        ) : (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Tumbas Selladas
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-black text-stone-900 mt-1 tracking-tight">
+                  {totalTumbasSelladas.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-stone-100 text-xs text-stone-500 flex items-center justify-between">
+              <span>Construcción definitiva</span>
+              <strong className="text-amber-800 font-bold">{totalTumbasSelladas.toLocaleString()} selladas</strong>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* KPI 4: Total de Difuntos */}
         <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 hover:shadow-md transition-shadow flex flex-col justify-between">
@@ -425,60 +513,118 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Tarjeta 2: Ingresos por concepto (Gráfico de barras verticales) */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-bold text-stone-800 tracking-tight">
-              Ingresos por concepto
-            </h4>
-            <div className="flex items-center gap-1 text-[11px] text-stone-500 bg-[#FAF8F5] border border-stone-200 px-2.5 py-1 rounded-lg font-medium cursor-pointer">
-              <span>Este mes</span>
-              <ChevronDown className="w-3 h-3 text-stone-400" />
+        {/* Tarjeta 2: Ingresos por concepto (Admin) / Condición de Tumbas (Operador) */}
+        {esAdmin ? (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-stone-800 tracking-tight">
+                Ingresos por concepto
+              </h4>
+              <div className="flex items-center gap-1 text-[11px] text-stone-500 bg-[#FAF8F5] border border-stone-200 px-2.5 py-1 rounded-lg font-medium cursor-pointer">
+                <span>Este mes</span>
+                <ChevronDown className="w-3 h-3 text-stone-400" />
+              </div>
+            </div>
+
+            <div className="h-56 mt-3">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={datosIngresos} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis 
+                    dataKey="concepto" 
+                    tick={{ fontSize: 11, fill: '#78716C' }} 
+                    axisLine={{ stroke: '#E7E5E4' }} 
+                    tickLine={false} 
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: '#A8A29E' }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    tickFormatter={(val) => `$${val / 1000}k`}
+                  />
+                  <Tooltip 
+                    content={<TooltipBarrasIngreso />}
+                    offset={{ x: 28, y: -20 }}
+                    allowEscapeViewBox={{ x: false, y: true }}
+                    cursor={{ fill: 'rgba(45, 106, 79, 0.08)' }}
+                    wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
+                  />
+                  <Bar dataKey="monto" radius={[6, 6, 0, 0]}>
+                    {datosIngresos.map((entry, index) => (
+                      <Cell key={`bar-${index}`} fill={entry.color} />
+                    ))}
+                    <LabelList 
+                      dataKey="monto" 
+                      position="top" 
+                      formatter={(val) => `$${(val / 1000).toFixed(1)}k`}
+                      style={{ fontSize: '10px', fill: '#57534E', fontWeight: 600 }}
+                    />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+              <span>Total del mes</span>
+              <strong className="text-stone-800 font-bold">$ 132,450</strong>
             </div>
           </div>
+        ) : (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-stone-800 tracking-tight">
+                  Condición de Tumbas
+                </h4>
+                <p className="text-[11px] text-stone-400 mt-0.5">Estructura arquitectónica y sellado</p>
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-stone-500 bg-[#FAF8F5] border border-stone-200 px-2.5 py-1 rounded-lg font-medium">
+                <Layers className="w-3 h-3 text-amber-700" />
+                <span>Estructura</span>
+              </div>
+            </div>
 
-          <div className="h-56 mt-3">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={datosIngresos} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                <XAxis 
-                  dataKey="concepto" 
-                  tick={{ fontSize: 11, fill: '#78716C' }} 
-                  axisLine={{ stroke: '#E7E5E4' }} 
-                  tickLine={false} 
-                />
-                <YAxis 
-                  tick={{ fontSize: 10, fill: '#A8A29E' }} 
-                  axisLine={false} 
-                  tickLine={false}
-                  tickFormatter={(val) => `$${val / 1000}k`}
-                />
-                <Tooltip 
-                  content={<TooltipBarrasIngreso />}
-                  offset={{ x: 28, y: -20 }}
-                  allowEscapeViewBox={{ x: false, y: true }}
-                  cursor={{ fill: 'rgba(45, 106, 79, 0.08)' }}
-                  wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
-                />
-                <Bar dataKey="monto" radius={[6, 6, 0, 0]}>
-                  {datosIngresos.map((entry, index) => (
-                    <Cell key={`bar-${index}`} fill={entry.color} />
-                  ))}
-                  <LabelList 
-                    dataKey="monto" 
-                    position="top" 
-                    formatter={(val) => `$${(val / 1000).toFixed(1)}k`}
-                    style={{ fontSize: '10px', fill: '#57534E', fontWeight: 600 }}
+            <div className="h-56 mt-3">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={datosCondicionTumbas} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis 
+                    dataKey="concepto" 
+                    tick={{ fontSize: 11, fill: '#78716C' }} 
+                    axisLine={{ stroke: '#E7E5E4' }} 
+                    tickLine={false} 
                   />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: '#A8A29E' }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <Tooltip 
+                    content={<TooltipBarrasCondicion />}
+                    offset={{ x: 28, y: -20 }}
+                    allowEscapeViewBox={{ x: false, y: true }}
+                    cursor={{ fill: 'rgba(45, 106, 79, 0.08)' }}
+                    wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
+                  />
+                  <Bar dataKey="cantidad" radius={[6, 6, 0, 0]}>
+                    {datosCondicionTumbas.map((entry, index) => (
+                      <Cell key={`cond-${index}`} fill={entry.color} />
+                    ))}
+                    <LabelList 
+                      dataKey="cantidad" 
+                      position="top" 
+                      formatter={(val) => Number(val).toLocaleString()}
+                      style={{ fontSize: '10px', fill: '#57534E', fontWeight: 600 }}
+                    />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-            <span>Total del mes</span>
-            <strong className="text-stone-800 font-bold">$ 132,450</strong>
+            <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+              <span>Selladas vs sencillas</span>
+              <strong className="text-amber-800 font-bold">{totalTumbasSelladas.toLocaleString()} selladas</strong>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Tarjeta 3: Tumbas por sección (Barras de progreso horizontales) */}
         <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
@@ -578,53 +724,106 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Tarjeta 2: Pagos recientes */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-            <h4 className="text-sm font-bold text-stone-800 tracking-tight">
-              Pagos recientes
-            </h4>
-            <button
-              type="button"
-              onClick={() => onCambiarPestana('finanzas')}
-              className="text-xs font-semibold text-[#2D6A4F] hover:text-[#18474E] flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <span>Ver todos</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        {/* Tarjeta 2: Pagos recientes (Admin) / Espacios en Padrón (Operador) */}
+        {esAdmin ? (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h4 className="text-sm font-bold text-stone-800 tracking-tight">
+                Pagos recientes
+              </h4>
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('finanzas')}
+                className="text-xs font-semibold text-[#2D6A4F] hover:text-[#18474E] flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Ver todos</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-          <div className="overflow-x-auto my-2">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="text-stone-400 font-semibold text-[11px] border-b border-stone-100">
-                  <th className="pb-2 font-medium">Fecha</th>
-                  <th className="pb-2 font-medium">Concepto</th>
-                  <th className="pb-2 font-medium">Monto</th>
-                  <th className="pb-2 font-medium text-right">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-50">
-                {pagosRecientes.map((pago) => (
-                  <tr key={pago.id} className="hover:bg-stone-50/70 transition-colors">
-                    <td className="py-2.5 text-stone-400 font-mono text-[11px] whitespace-nowrap">{pago.fecha}</td>
-                    <td className="py-2.5 font-medium text-stone-800 max-w-[120px] truncate">{pago.concepto}</td>
-                    <td className="py-2.5 font-mono font-bold text-stone-900 whitespace-nowrap">$ {pago.monto.toLocaleString()}</td>
-                    <td className="py-2.5 text-right whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {pago.estado}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto my-2">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-stone-400 font-semibold text-[11px] border-b border-stone-100">
+                    <th className="pb-2 font-medium">Fecha</th>
+                    <th className="pb-2 font-medium">Concepto</th>
+                    <th className="pb-2 font-medium">Monto</th>
+                    <th className="pb-2 font-medium text-right">Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-stone-50">
+                  {pagosRecientes.map((pago) => (
+                    <tr key={pago.id} className="hover:bg-stone-50/70 transition-colors">
+                      <td className="py-2.5 text-stone-400 font-mono text-[11px] whitespace-nowrap">{pago.fecha}</td>
+                      <td className="py-2.5 font-medium text-stone-800 max-w-[120px] truncate">{pago.concepto}</td>
+                      <td className="py-2.5 font-mono font-bold text-stone-900 whitespace-nowrap">$ {pago.monto.toLocaleString()}</td>
+                      <td className="py-2.5 text-right whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {pago.estado}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="pt-2 border-t border-stone-100 text-[11px] text-stone-400 text-center">
-            Caja chica y tesorería sincronizadas
+            <div className="pt-2 border-t border-stone-100 text-[11px] text-stone-400 text-center">
+              Caja chica y tesorería sincronizadas
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <h4 className="text-sm font-bold text-stone-800 tracking-tight">
+                Espacios Funerarios en Padrón
+              </h4>
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('espacios')}
+                className="text-xs font-semibold text-[#2D6A4F] hover:text-[#18474E] flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>Ver padrón</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto my-2">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-stone-400 font-semibold text-[11px] border-b border-stone-100">
+                    <th className="pb-2 font-medium">Lote</th>
+                    <th className="pb-2 font-medium">Titular</th>
+                    <th className="pb-2 font-medium">Sección</th>
+                    <th className="pb-2 font-medium text-right">Condición</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-50">
+                  {expedientesRecientes.map((exp) => (
+                    <tr key={exp.id} className="hover:bg-stone-50/70 transition-colors">
+                      <td className="py-2.5 font-mono font-bold text-stone-900 text-[11px] whitespace-nowrap">{exp.codigo}</td>
+                      <td className="py-2.5 font-medium text-stone-800 max-w-[120px] truncate">{exp.titular}</td>
+                      <td className="py-2.5 text-stone-500 text-[11px] whitespace-nowrap">{exp.seccion}</td>
+                      <td className="py-2.5 text-right whitespace-nowrap">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          exp.condicion === 'Sellada' 
+                            ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        }`}>
+                          {exp.condicion}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="pt-2 border-t border-stone-100 text-[11px] text-stone-400 text-center">
+              Control físico y cartográfico de tumbas
+            </div>
+          </div>
+        )}
 
         {/* Tarjeta 3: Accesos rápidos (Cuadrícula 2x3 con 6 botones interactivos) */}
         <div className="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/70 flex flex-col justify-between">
@@ -678,47 +877,92 @@ export default function Dashboard({
               </span>
             </button>
 
-            {/* 4. Registrar pago */}
-            <button
-              type="button"
-              onClick={() => onCambiarPestana('finanzas')}
-              className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
-            >
-              <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center transition-colors">
-                <CircleDollarSign className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Registrar pago
-              </span>
-            </button>
+            {/* 4. Registrar pago (Admin) / Plano General (Operador) */}
+            {esAdmin ? (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('finanzas')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <CircleDollarSign className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Registrar pago
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('mapa')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <Map className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Plano general
+                </span>
+              </button>
+            )}
 
-            {/* 5. Generar reporte */}
-            <button
-              type="button"
-              onClick={() => onCambiarPestana('reportes')}
-              className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
-            >
-              <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-700 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center transition-colors">
-                <BarChart3 className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Generar reporte
-              </span>
-            </button>
+            {/* 5. Generar reporte (Admin) / Expediente Digital (Operador) */}
+            {esAdmin ? (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('reportes')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-700 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Generar reporte
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('espacios')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-sky-50 text-sky-700 group-hover:bg-sky-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <Eye className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Ver expedientes
+                </span>
+              </button>
+            )}
 
-            {/* 6. Ver plano general */}
-            <button
-              type="button"
-              onClick={() => onCambiarPestana('mapa')}
-              className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
-            >
-              <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center transition-colors">
-                <Map className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
-                Ver plano general
-              </span>
-            </button>
+            {/* 6. Ver plano general (Admin) / Tumbas Selladas (Operador) */}
+            {esAdmin ? (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('mapa')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <Map className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Ver plano general
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCambiarPestana('espacios')}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Tumbas selladas
+                </span>
+              </button>
+            )}
 
           </div>
 

@@ -79,6 +79,14 @@ export default function App() {
   const [menuMobileAbierto, setMenuMobileAbierto] = useState(false);
   const [busquedaGlobal, setBusquedaGlobal] = useState('');
 
+  // Verificación de perfil y privilegios contables (Solo el Admin puede ver contabilidad/finanzas)
+  const esAdmin = usuarioAutenticado?.rol === 'admin' || Boolean(usuarioAutenticado?.permisos?.contabilidad);
+
+  // Derivar la pestaña activa garantizando que operadores no admin jamás accedan a pestañas contables
+  const pestanaEfectiva = (!esAdmin && (pestanaActiva === 'finanzas' || pestanaActiva === 'reportes'))
+    ? 'dashboard'
+    : pestanaActiva;
+
   // 3. Estados de Datos Centrales
   const [registrosFosas, setRegistrosFosas] = useState(REGISTROS_FOSAS_INICIALES);
   const [secciones] = useState(SECCIONES_INICIALES);
@@ -321,6 +329,7 @@ export default function App() {
   };
 
   const handleAbrirHistorial = (espacio, opciones = {}) => {
+    if (!esAdmin) return;
     const espacioMasReciente = (registrosFosas || []).find(r => r.id === espacio?.id || (r.codigo && r.codigo === espacio?.codigo)) || espacio;
     setFosaHistorialModal({ ...espacioMasReciente, _opcionesHistorial: opciones });
   };
@@ -416,9 +425,13 @@ export default function App() {
 
       {/* Sidebar Dual Moderno Responsivo */}
       <Sidebar
-        pestanaActiva={pestanaActiva}
+        pestanaActiva={pestanaEfectiva}
         onCambiarPestana={(tab) => {
-          setPestanaActiva(tab);
+          if (!esAdmin && (tab === 'finanzas' || tab === 'reportes')) {
+            setPestanaActiva('dashboard');
+          } else {
+            setPestanaActiva(tab);
+          }
           setMenuMobileAbierto(false);
         }}
         totalEspacios={registrosFosas.length}
@@ -427,6 +440,7 @@ export default function App() {
         onToggleColapsar={() => setMenuColapsado(prev => !prev)}
         mobileAbierto={menuMobileAbierto}
         onCerrarMobile={() => setMenuMobileAbierto(false)}
+        esAdmin={esAdmin}
       />
 
       {/* Contenedor Principal (Header + Vistas de Contenido) */}
@@ -434,7 +448,7 @@ export default function App() {
         
         {/* Header Superior Corporativo con Buscador Universal */}
         <Header
-          pestanaActiva={pestanaActiva}
+          pestanaActiva={pestanaEfectiva}
           busquedaGlobal={busquedaGlobal}
           onBusquedaChange={setBusquedaGlobal}
           registrosFosas={registrosFosas}
@@ -445,6 +459,7 @@ export default function App() {
           }}
           totalConAdeudo={totalConAdeudo}
           usuarioActual={usuarioAutenticado}
+          esAdmin={esAdmin}
           onCerrarSesion={handleLogout}
           onToggleMobileMenu={() => setMenuMobileAbierto(prev => !prev)}
         />
@@ -454,17 +469,18 @@ export default function App() {
           <div className="w-full max-w-[1920px] mx-auto space-y-6">
 
             {/* Vista 1: Dashboard Ejecutivo Estilo SaaS */}
-            {pestanaActiva === 'dashboard' && (
+            {pestanaEfectiva === 'dashboard' && (
               <Dashboard
                 registrosFosas={registrosFosas}
                 movimientosFinancieros={movimientosFinancieros}
                 onCambiarPestana={setPestanaActiva}
                 onAbrirModalRegistro={() => setModalRegistroAbierto(true)}
+                esAdmin={esAdmin}
               />
             )}
 
             {/* Vista 2: Padrón de Fosas y Nichos / Búsqueda */}
-            {(pestanaActiva === 'espacios' || pestanaActiva === 'busqueda') && (
+            {(pestanaEfectiva === 'espacios' || pestanaEfectiva === 'busqueda') && (
               <ControlEspacios
                 secciones={secciones}
                 seccionSeleccionada={seccionSeleccionada}
@@ -479,12 +495,13 @@ export default function App() {
                 onContextMenu={handleContextMenu}
                 onRegistrarMovimiento={handleRegistrarMovimiento}
                 onActualizarFosa={handleActualizarRegistro}
-                enfocarBusqueda={pestanaActiva === 'busqueda'}
+                enfocarBusqueda={pestanaEfectiva === 'busqueda'}
+                esAdmin={esAdmin}
               />
             )}
 
             {/* Vista 3: Plano General del Panteón */}
-            {pestanaActiva === 'mapa' && (
+            {pestanaEfectiva === 'mapa' && (
               <PlanoGeneral
                 distribucionPlano={distribucionPlano}
                 registrosFosas={registrosFosas}
@@ -494,19 +511,20 @@ export default function App() {
                 onAbrirHistorial={handleAbrirHistorial}
                 onRegistrarMovimiento={handleRegistrarMovimiento}
                 onActualizarFosa={handleActualizarRegistro}
+                esAdmin={esAdmin}
               />
             )}
 
-            {/* Vista 4: Control de Caja y Gastos */}
-            {pestanaActiva === 'finanzas' && (
+            {/* Vista 4: Control de Caja y Gastos (Solo Administrador) */}
+            {esAdmin && pestanaEfectiva === 'finanzas' && (
               <FinanzasCaja
                 movimientos={movimientosFinancieros}
                 onRegistrarMovimiento={handleRegistrarMovimiento}
               />
             )}
 
-            {/* Vista 5: Reportes y Estadísticas de Ocupación */}
-            {pestanaActiva === 'reportes' && (
+            {/* Vista 5: Reportes y Estadísticas de Ocupación (Solo Administrador) */}
+            {esAdmin && pestanaEfectiva === 'reportes' && (
               <ReportesIngresos
                 registrosFosas={registrosFosas}
                 secciones={secciones}
@@ -529,9 +547,12 @@ export default function App() {
           onEditar={(item) => setRegistroAEditar(item)}
           onAbrirExpediente={handleAbrirExpediente}
           onAbrirHistorial={handleAbrirHistorial}
-          onEmitirRecibo={(item) => setReciboModalItem(item)}
+          onEmitirRecibo={(item) => {
+            if (esAdmin) setReciboModalItem(item);
+          }}
           onImprimirTitulo={(item) => setRegistroAEditar(item)}
           onClose={() => setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null })}
+          esAdmin={esAdmin}
         />
       )}
 
@@ -553,11 +574,12 @@ export default function App() {
           onGuardar={handleActualizarRegistro}
           onAbrirExpediente={handleAbrirExpediente}
           onAbrirHistorial={handleAbrirHistorial}
+          esAdmin={esAdmin}
         />
       )}
 
-      {/* Modal de Cobro y Recibo Oficial de Pago */}
-      {reciboModalItem && (
+      {/* Modal de Cobro y Recibo Oficial de Pago (Solo Administrador) */}
+      {esAdmin && reciboModalItem && (
         <ModalReciboPago
           espacio={reciboModalItem}
           registrosFosas={registrosFosas}
@@ -567,8 +589,8 @@ export default function App() {
         />
       )}
 
-      {/* Modal de Historial de Pagos y Refrendos por Tumba */}
-      {fosaHistorialModal && (
+      {/* Modal de Historial de Pagos y Refrendos por Tumba (Solo Administrador) */}
+      {esAdmin && fosaHistorialModal && (
         <ModalHistorialPagos
           abierto={!!fosaHistorialModal}
           espacio={fosaHistorialModal}

@@ -18,7 +18,8 @@ export default function Sidebar({
   menuColapsado = false,
   onToggleColapsar,
   mobileAbierto = false,
-  onCerrarMobile
+  onCerrarMobile,
+  esAdmin = true
 }) {
   const menuItems = [
     {
@@ -58,6 +59,13 @@ export default function Sidebar({
       hasChevron: true
     }
   ];
+
+  const menuItemsVisibles = menuItems.filter(item => {
+    if (!esAdmin && (item.id === 'finanzas' || item.id === 'reportes')) {
+      return false;
+    }
+    return true;
+  });
 
   const handleItemClick = (id) => {
     onCambiarPestana(id);
@@ -119,7 +127,7 @@ export default function Sidebar({
 
         {/* 2. Lista de Navegación */}
         <nav className="p-3 space-y-1.5 overflow-y-auto max-h-[calc(100vh-220px)]">
-          {menuItems.map((item) => {
+          {menuItemsVisibles.map((item) => {
             const Icon = item.icon;
             const activo = isItemActive(item.id);
 

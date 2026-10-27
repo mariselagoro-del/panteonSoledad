@@ -1,16 +1,17 @@
-// src/components/common/Header.jsx
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Search, 
   Calendar, 
   Bell, 
-  X,
-  Archive,
-  Sprout,
-  ArrowRight,
-  Menu,
-  Power,
-  User
+  X, 
+  Archive, 
+  Sprout, 
+  ArrowRight, 
+  Menu, 
+  Power, 
+  User, 
+  ShieldCheck, 
+  UserCheck 
 } from 'lucide-react';
 import { coincideEspacioConBusqueda } from '../../utils/busquedaUtils';
 
@@ -22,6 +23,7 @@ export default function Header({
   onNavegarAPadron,
   totalConAdeudo = 0,
   usuarioActual = null,
+  esAdmin = true,
   onCerrarSesion,
   onToggleMobileMenu
 }) {
@@ -119,11 +121,21 @@ export default function Header({
         )}
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-[#152822] text-[#D2B79A] flex items-center justify-center font-bold text-xs shadow-xs border border-[#234238]">
-            <User className="w-4 h-4" />
+            {esAdmin ? <ShieldCheck className="w-4 h-4 text-[#D2B79A]" /> : <User className="w-4 h-4 text-[#D2B79A]" />}
           </div>
           <div>
             <div className="text-xs sm:text-sm font-semibold text-stone-700">
               Bienvenido(a), <span className="font-bold text-[#152822]">{usuarioActual?.nombre || 'Administrador'}</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                esAdmin 
+                  ? 'bg-amber-50 text-amber-900 border-amber-300' 
+                  : 'bg-emerald-50 text-emerald-900 border-emerald-300'
+              }`}>
+                {esAdmin ? <ShieldCheck className="w-3 h-3 text-amber-700" /> : <UserCheck className="w-3 h-3 text-emerald-700" />}
+                <span>{usuarioActual?.rolEtiqueta || (esAdmin ? 'Administrador General' : 'Operador Catastral')}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -219,13 +231,19 @@ export default function Header({
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          item.estatusPago === 'Al Corriente'
-                            ? 'bg-olive-100 text-olive-800 border-olive-300'
-                            : 'bg-rust-100 text-rust-800 border-rust-300'
-                        }`}>
-                          {item.estatusPago || 'Al Corriente'}
-                        </span>
+                        {esAdmin ? (
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            item.estatusPago === 'Al Corriente'
+                              ? 'bg-olive-100 text-olive-800 border-olive-300'
+                              : 'bg-rust-100 text-rust-800 border-rust-300'
+                          }`}>
+                            {item.estatusPago || 'Al Corriente'}
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border bg-cream-100 text-stone-700 border-cream-300">
+                            {item.tipoConstruccion === 'Sellada' ? 'Sellada' : item.tipoEspacio || 'Fosa'}
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
@@ -259,8 +277,8 @@ export default function Header({
           <span className="sm:hidden">{new Date().toLocaleDateString('es-MX')}</span>
         </div>
 
-        {/* Notificaciones de Adeudo */}
-        {totalConAdeudo > 0 && (
+        {/* Notificaciones de Adeudo (Solo Administrador) */}
+        {esAdmin && totalConAdeudo > 0 && (
           <button
             type="button"
             onClick={() => {

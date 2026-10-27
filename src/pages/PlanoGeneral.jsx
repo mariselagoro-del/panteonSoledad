@@ -34,7 +34,8 @@ export default function PlanoGeneral({
   onAbrirExpediente,
   onAbrirHistorial,
   onRegistrarMovimiento,
-  onActualizarFosa
+  onActualizarFosa,
+  esAdmin = true
 }) {
   const [docActivoIdx, setDocActivoIdx] = useState(0);
   const [zoomNivel, setZoomNivel] = useState(1);
@@ -867,8 +868,8 @@ export default function PlanoGeneral({
                 <span>Editar Información del Lote</span>
               </button>
 
-              {/* Botón: Ver Historial de Pagos y Refrendos */}
-              {onAbrirHistorial && (
+              {/* Botón: Ver Historial de Pagos y Refrendos (Solo Administrador) */}
+              {esAdmin && onAbrirHistorial && (
                 <button
                   type="button"
                   onClick={() => onAbrirHistorial(fosaSeleccionada)}
@@ -879,14 +880,17 @@ export default function PlanoGeneral({
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => setModalRecibo({ abierto: true, espacio: fosaSeleccionada })}
-                className="w-full py-2 bg-olive-500 hover:bg-olive-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer border border-olive-600"
-              >
-                <Receipt className="w-3.5 h-3.5" />
-                <span>Registrar Cobro / Refrendo</span>
-              </button>
+              {/* Botón: Registrar Cobro / Refrendo (Solo Administrador) */}
+              {esAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setModalRecibo({ abierto: true, espacio: fosaSeleccionada })}
+                  className="w-full py-2 bg-olive-500 hover:bg-olive-600 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer border border-olive-600"
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>Registrar Cobro / Refrendo</span>
+                </button>
+              )}
 
               <button
                 type="button"

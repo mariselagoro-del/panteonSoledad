@@ -27,7 +27,8 @@ export default function ModalEditarFosa({
   onCerrar,
   onClose,
   onAbrirExpediente,
-  onAbrirHistorial
+  onAbrirHistorial,
+  esAdmin = true
 }) {
   const itemActual = fosa || registro;
 
@@ -198,17 +199,29 @@ export default function ModalEditarFosa({
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Estatus de Cobro</label>
-              <select
-                value={formData.estatusPago}
-                onChange={(e) => setFormData({ ...formData, estatusPago: e.target.value })}
-                className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-              >
-                <option value="Al Corriente">Al Corriente</option>
-                <option value="Con Adeudo">Con Adeudo</option>
-              </select>
-            </div>
+            {esAdmin ? (
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Estatus de Cobro</label>
+                <select
+                  value={formData.estatusPago}
+                  onChange={(e) => setFormData({ ...formData, estatusPago: e.target.value })}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                >
+                  <option value="Al Corriente">Al Corriente</option>
+                  <option value="Con Adeudo">Con Adeudo</option>
+                </select>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Tipo de Espacio</label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.tipoEspacio || 'Fosa'}
+                  className="w-full bg-cream-50 border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900"
+                />
+              </div>
+            )}
           </div>
 
           {/* Fila: Estado de Construcción de la Tumba (Sencilla / Sellada) y Fecha de Sellado */}
@@ -337,8 +350,8 @@ export default function ModalEditarFosa({
             )}
           </div>
 
-          {/* Historial de Pagos y Refrendos - Resumen y Acceso Rápido */}
-          {(() => {
+          {/* Historial de Pagos y Refrendos - Resumen y Acceso Rápido (Solo Administrador) */}
+          {esAdmin && (() => {
             const finanzas = obtenerHistorialPagosFosa(itemActual);
             const alCorriente = finanzas.estatusActual === 'Al Corriente';
 

@@ -38,7 +38,8 @@ export default function ControlEspacios({
   onContextMenu,
   onRegistrarMovimiento,
   onActualizarFosa,
-  enfocarBusqueda = false
+  enfocarBusqueda = false,
+  esAdmin = true
 }) {
   const [busquedaLocal, setBusquedaLocal] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('Todos'); // 'Todos' | 'Fosa' | 'Nicho'
@@ -168,16 +169,18 @@ export default function ControlEspacios({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botón de Emitir Recibo de Pago (Verde Salvia/Esmeralda #2D6A4F) */}
-          <button
-            type="button"
-            onClick={() => handleAbrirRecibo(null)}
-            className="px-4 py-2.5 bg-[#2D6A4F] hover:bg-[#21533D] text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer border border-[#2D6A4F]"
-            title="Registrar cobro y emitir recibo oficial de pago"
-          >
-            <Receipt className="w-4 h-4 text-white" />
-            <span>Emitir Recibo de Pago</span>
-          </button>
+          {/* Botón de Emitir Recibo de Pago (Solo Administrador) */}
+          {esAdmin && (
+            <button
+              type="button"
+              onClick={() => handleAbrirRecibo(null)}
+              className="px-4 py-2.5 bg-[#2D6A4F] hover:bg-[#21533D] text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer border border-[#2D6A4F]"
+              title="Registrar cobro y emitir recibo oficial de pago"
+            >
+              <Receipt className="w-4 h-4 text-white" />
+              <span>Emitir Recibo de Pago</span>
+            </button>
+          )}
 
           {/* Botón de Registrar Nueva Fosa (Verde Bosque Institucional #152822) */}
           <button
@@ -246,21 +249,23 @@ export default function ControlEspacios({
             </select>
           </div>
 
-          {/* Filtro Cobro (1.5 / 1 col en desktop) */}
-          <div className="sm:col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1">
-            <select
-              value={filtroPago}
-              onChange={(e) => handleCambiarFiltro(setFiltroPago, e.target.value)}
-              className="w-full bg-cream-50 border border-cream-300 rounded-xl px-2 py-2 text-xs font-semibold text-stone-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
-            >
-              <option value="Todos">Cobro</option>
-              <option value="Al Corriente">Al Corriente</option>
-              <option value="Con Adeudo">Con Adeudo</option>
-            </select>
-          </div>
+          {/* Filtro Cobro (Solo Administrador) */}
+          {esAdmin && (
+            <div className="sm:col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1">
+              <select
+                value={filtroPago}
+                onChange={(e) => handleCambiarFiltro(setFiltroPago, e.target.value)}
+                className="w-full bg-cream-50 border border-cream-300 rounded-xl px-2 py-2 text-xs font-semibold text-stone-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
+              >
+                <option value="Todos">Cobro</option>
+                <option value="Al Corriente">Al Corriente</option>
+                <option value="Con Adeudo">Con Adeudo</option>
+              </select>
+            </div>
+          )}
 
-          {/* Filtro Expediente Digital (2 cols en desktop) */}
-          <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-2">
+          {/* Filtro Expediente Digital */}
+          <div className={esAdmin ? "sm:col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-2" : "sm:col-span-1 md:col-span-1 lg:col-span-3 xl:col-span-3"}>
             <select
               value={filtroExpediente}
               onChange={(e) => handleCambiarFiltro(setFiltroExpediente, e.target.value)}
@@ -466,22 +471,33 @@ export default function ControlEspacios({
                         )}
                       </td>
 
-                      {/* Estatus Refrendo (Interactivo para abrir historial de pagos) */}
+                      {/* Estatus Refrendo (Interactivo para abrir historial de pagos solo para admin) */}
                       <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer hover:shadow-xs hover:scale-102 ${
+                        {esAdmin ? (
+                          <button
+                            type="button"
+                            onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer hover:shadow-xs hover:scale-102 ${
+                              alCorriente
+                                ? 'bg-olive-100 hover:bg-olive-200 text-olive-900 border-olive-300'
+                                : 'bg-rust-100 hover:bg-rust-200 text-rust-900 border-rust-300'
+                            }`}
+                            title="Clic para ver el historial completo de pagos y refrendos"
+                          >
+                            {alCorriente ? <CheckCircle2 className="w-3 h-3 text-olive-600" /> : <AlertCircle className="w-3 h-3 text-rust-600" />}
+                            <span>{item.estatusPago || 'Al Corriente'}</span>
+                            <History className="w-3 h-3 opacity-60 ml-0.5" />
+                          </button>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
                             alCorriente
-                              ? 'bg-olive-100 hover:bg-olive-200 text-olive-900 border-olive-300'
-                              : 'bg-rust-100 hover:bg-rust-200 text-rust-900 border-rust-300'
-                          }`}
-                          title="Clic para ver el historial completo de pagos y refrendos"
-                        >
-                          {alCorriente ? <CheckCircle2 className="w-3 h-3 text-olive-600" /> : <AlertCircle className="w-3 h-3 text-rust-600" />}
-                          <span>{item.estatusPago || 'Al Corriente'}</span>
-                          <History className="w-3 h-3 opacity-60 ml-0.5" />
-                        </button>
+                              ? 'bg-olive-50 text-olive-800 border-olive-200'
+                              : 'bg-rust-50 text-rust-800 border-rust-200'
+                          }`}>
+                            {alCorriente ? <CheckCircle2 className="w-3 h-3 text-olive-600" /> : <AlertCircle className="w-3 h-3 text-rust-600" />}
+                            <span>{item.estatusPago || 'Al Corriente'}</span>
+                          </span>
+                        )}
                       </td>
 
                       {/* Expediente Electrónico (Badge Interactivo que abre el Visor) */}
@@ -507,8 +523,8 @@ export default function ControlEspacios({
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5 opacity-90 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                           
-                          {/* Botón: Ya Pagó (Acceso directo a liquidación con recibo físico) */}
-                          {!alCorriente && (
+                          {/* Botón: Ya Pagó (Solo Administrador) */}
+                          {esAdmin && !alCorriente && (
                             <button
                               type="button"
                               onClick={() => onAbrirHistorial && onAbrirHistorial(item, { filtro: 'Adeudos' })}
@@ -519,15 +535,17 @@ export default function ControlEspacios({
                             </button>
                           )}
 
-                          {/* Botón: Ver Historial de Pagos de la Tumba */}
-                          <button
-                            type="button"
-                            onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
-                            className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 cursor-pointer transition-colors"
-                            title="Ver Historial de Pagos y Refrendos de la Fosa"
-                          >
-                            <History className="w-3.5 h-3.5 text-teal-700" />
-                          </button>
+                          {/* Botón: Ver Historial de Pagos de la Tumba (Solo Administrador) */}
+                          {esAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
+                              className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 cursor-pointer transition-colors"
+                              title="Ver Historial de Pagos y Refrendos de la Fosa"
+                            >
+                              <History className="w-3.5 h-3.5 text-teal-700" />
+                            </button>
+                          )}
 
                           {/* Botón 1: Adjuntar / Gestionar Documentos del Expediente (FolderPlus) */}
                           <button
@@ -539,15 +557,17 @@ export default function ControlEspacios({
                             <FolderPlus className="w-3.5 h-3.5 text-stone-600" />
                           </button>
 
-                          {/* Botón Emitir / Imprimir Recibo de Pago */}
-                          <button
-                            type="button"
-                            onClick={() => handleAbrirRecibo(item)}
-                            className="p-1.5 rounded-lg bg-olive-100 hover:bg-olive-200 text-olive-900 border border-olive-300 cursor-pointer transition-colors"
-                            title="Cobrar y Emitir Recibo Oficial de Pago"
-                          >
-                            <Receipt className="w-3.5 h-3.5 text-olive-800" />
-                          </button>
+                          {/* Botón Emitir / Imprimir Recibo de Pago (Solo Administrador) */}
+                          {esAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleAbrirRecibo(item)}
+                              className="p-1.5 rounded-lg bg-olive-100 hover:bg-olive-200 text-olive-900 border border-olive-300 cursor-pointer transition-colors"
+                              title="Cobrar y Emitir Recibo Oficial de Pago"
+                            >
+                              <Receipt className="w-3.5 h-3.5 text-olive-800" />
+                            </button>
+                          )}
 
                           {/* Botón Cédula de Título */}
                           <button
