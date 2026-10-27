@@ -407,8 +407,20 @@ app.post('/api/movimientos', async (req, res) => {
   }
 });
 
-// Servir archivos estáticos del frontend de producción (dist/)
-app.use(express.static(distPath));
+// Servir archivos estáticos del frontend de producción (dist/) con control de caché optimizado
+app.use(express.static(distPath, {
+  setHeaders: (res, filePath) => {
+    // index.html y sw.js nunca deben ser almacenados en caché persistente para asegurar actualizaciones en tiempo real
+    if (filePath.endsWith('index.html') || filePath.endsWith('sw.js') || filePath.endsWith('registerSW.js')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (filePath.includes('/assets/') || filePath.includes('\\assets\\')) {
+      // Los archivos versionados con hash en dist/assets pueden cachearse con seguridad
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 // Redirigir cualquier ruta que no sea /api al index.html de React (SPA Fallback compatible con Express 5)
 app.use((req, res, next) => {
@@ -420,6 +432,9 @@ app.use((req, res, next) => {
   }
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     return res.sendFile(indexPath);
   }
   return res.status(200).send('API de Panteón La Soledad activa. Para cargar la interfaz web, compila con "npm run build".');

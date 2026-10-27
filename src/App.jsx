@@ -1,7 +1,9 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// Tiempo máximo de inactividad permitido antes de cerrar la sesión automáticamente (10 minutos)
+// Constantes de gestión de sesión e inactividad (10 minutos)
+const SESSION_KEY = 'panteon_session';
+const LAST_ACTIVITY_KEY = 'panteon_last_activity';
 const TIEMPO_MAXIMO_INACTIVIDAD_MS = 10 * 60 * 1000;
 
 // Componentes comunes y autenticación
@@ -35,19 +37,39 @@ import {
 } from './constants/panteonData';
 
 export default function App() {
-  // 1. Estado de Sesión y Autenticación Administrativa
+  // 1. Estado de Sesión y Autenticación Administrativa con verificación de inactividad previa
   const [usuarioAutenticado, setUsuarioAutenticado] = useState(() => {
-    const sesion = localStorage.getItem('panteon_session') || sessionStorage.getItem('panteon_session');
-    if (sesion) {
-      try {
-        return JSON.parse(sesion);
-      } catch {
-        return null;
-      }
+    const sesion = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+    if (!sesion) return null;
+
+    const ultimaActividadStr = localStorage.getItem(LAST_ACTIVITY_KEY) || sessionStorage.getItem(LAST_ACTIVITY_KEY);
+    const ultimaActividad = Number(ultimaActividadStr);
+
+    // Si pasaron más de 10 minutos desde la última actividad registrada, invalidar la sesión guardada
+    if (ultimaActividad && Date.now() - ultimaActividad >= TIEMPO_MAXIMO_INACTIVIDAD_MS) {
+      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+      sessionStorage.removeItem(LAST_ACTIVITY_KEY);
+      return null;
+    }
+
+    try {
+      return JSON.parse(sesion);
+    } catch {
+      return null;
+    }
+  });
+
+  const [motivoLogout, setMotivoLogout] = useState(() => {
+    const sesion = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+    const ultimaActividadStr = localStorage.getItem(LAST_ACTIVITY_KEY) || sessionStorage.getItem(LAST_ACTIVITY_KEY);
+    const ultimaActividad = Number(ultimaActividadStr);
+    if (sesion && ultimaActividad && Date.now() - ultimaActividad >= TIEMPO_MAXIMO_INACTIVIDAD_MS) {
+      return 'Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.';
     }
     return null;
   });
-  const [motivoLogout, setMotivoLogout] = useState(null);
   const ultimoAccesoRef = useRef(0);
   const timerInactividadRef = useRef(null);
 
@@ -121,8 +143,10 @@ export default function App() {
   // Handlers de Autenticación
   const handleLogout = useCallback((motivo = null) => {
     setUsuarioAutenticado(null);
-    localStorage.removeItem('panteon_session');
-    sessionStorage.removeItem('panteon_session');
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
+    sessionStorage.removeItem(LAST_ACTIVITY_KEY);
     setModalRegistroAbierto(false);
     setRegistroAEditar(null);
     setReciboModalItem(null);
@@ -136,12 +160,15 @@ export default function App() {
 
   const handleLogin = (datosUsuario) => {
     setMotivoLogout(null);
-    ultimoAccesoRef.current = Date.now();
+    const ahora = Date.now();
+    ultimoAccesoRef.current = ahora;
     setUsuarioAutenticado(datosUsuario);
     if (datosUsuario.recordar) {
-      localStorage.setItem('panteon_session', JSON.stringify(datosUsuario));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(datosUsuario));
+      localStorage.setItem(LAST_ACTIVITY_KEY, ahora.toString());
     } else {
-      sessionStorage.setItem('panteon_session', JSON.stringify(datosUsuario));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(datosUsuario));
+      sessionStorage.setItem(LAST_ACTIVITY_KEY, ahora.toString());
     }
   };
 
@@ -149,9 +176,19 @@ export default function App() {
   useEffect(() => {
     if (!usuarioAutenticado) return;
 
-    // Reinicia el temporizador de inactividad
-    const reiniciarTemporizador = () => {
-      ultimoAccesoRef.current = Date.now();
+    // Inicializar timestamp de referencia verificando el guardado en almacenamiento
+    const ahora = Date.now();
+    const guardada = Number(localStorage.getItem(LAST_ACTIVITY_KEY) || sessionStorage.getItem(LAST_ACTIVITY_KEY) || 0);
+    ultimoAccesoRef.current = guardada > 0 ? guardada : ahora;
+
+    // Actualizar actividad y programar temporizador
+    const reiniciarTemporizador = (nuevoTimestamp = Date.now()) => {
+      ultimoAccesoRef.current = nuevoTimestamp;
+      if (localStorage.getItem(SESSION_KEY)) {
+        localStorage.setItem(LAST_ACTIVITY_KEY, nuevoTimestamp.toString());
+      } else if (sessionStorage.getItem(SESSION_KEY)) {
+        sessionStorage.setItem(LAST_ACTIVITY_KEY, nuevoTimestamp.toString());
+      }
       if (timerInactividadRef.current) {
         clearTimeout(timerInactividadRef.current);
       }
@@ -162,7 +199,9 @@ export default function App() {
 
     // Verificación de respaldo (útil si la computadora entra en reposo o la pestaña estuvo en segundo plano)
     const verificarInactividad = () => {
-      const tiempoTranscurrido = Date.now() - ultimoAccesoRef.current;
+      const tiempoActual = Date.now();
+      const ultimaAct = Number(localStorage.getItem(LAST_ACTIVITY_KEY) || sessionStorage.getItem(LAST_ACTIVITY_KEY) || ultimoAccesoRef.current || tiempoActual);
+      const tiempoTranscurrido = tiempoActual - ultimaAct;
       if (tiempoTranscurrido >= TIEMPO_MAXIMO_INACTIVIDAD_MS) {
         handleLogout('Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.');
       } else {
@@ -179,23 +218,37 @@ export default function App() {
     // Eventos del usuario que cuentan como actividad en el sistema
     const eventos = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
     
-    // Throttle ligero para no ejecutar reiniciarTemporizador cientos de veces por segundo en mousemove
+    // Throttle de 2 segundos para no sobrecargar el almacenamiento en mousemove
     let ultimoRegistro = 0;
     const manejadorActividad = () => {
-      const ahora = Date.now();
-      if (ahora - ultimoRegistro > 1000) {
-        ultimoRegistro = ahora;
-        reiniciarTemporizador();
+      const actual = Date.now();
+      if (actual - ultimoRegistro > 2000) {
+        ultimoRegistro = actual;
+        reiniciarTemporizador(actual);
       }
     };
 
-    // Iniciar temporizador inicial
-    reiniciarTemporizador();
+    // Iniciar temporizador inicial con el tiempo restante real
+    const tiempoTranscurridoInicial = ahora - ultimoAccesoRef.current;
+    const tiempoRestanteInicial = Math.max(0, TIEMPO_MAXIMO_INACTIVIDAD_MS - tiempoTranscurridoInicial);
+    timerInactividadRef.current = setTimeout(() => {
+      handleLogout('Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.');
+    }, tiempoRestanteInicial);
 
     // Registrar escuchadores globales
     eventos.forEach(evento => {
       window.addEventListener(evento, manejadorActividad, { passive: true });
     });
+
+    // Sincronización entre pestañas del navegador mediante evento 'storage'
+    const handleStorageChange = (e) => {
+      if (e.key === SESSION_KEY && !e.newValue) {
+        handleLogout();
+      } else if (e.key === LAST_ACTIVITY_KEY && e.newValue) {
+        ultimoAccesoRef.current = Number(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     // Detectar cuando el usuario regresa a la pestaña
     const handleVisibilidad = () => {
@@ -206,8 +259,8 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilidad);
     window.addEventListener('focus', verificarInactividad);
 
-    // Chequeo periódico cada 30 segundos
-    const intervaloVerificacion = setInterval(verificarInactividad, 30000);
+    // Chequeo periódico cada 15 segundos
+    const intervaloVerificacion = setInterval(verificarInactividad, 15000);
 
     return () => {
       if (timerInactividadRef.current) {
@@ -217,6 +270,7 @@ export default function App() {
       eventos.forEach(evento => {
         window.removeEventListener(evento, manejadorActividad);
       });
+      window.removeEventListener('storage', handleStorageChange);
       document.removeEventListener('visibilitychange', handleVisibilidad);
       window.removeEventListener('focus', verificarInactividad);
     };
