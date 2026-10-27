@@ -1,5 +1,8 @@
 // src/App.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+// Tiempo máximo de inactividad permitido antes de cerrar la sesión automáticamente (10 minutos)
+const TIEMPO_MAXIMO_INACTIVIDAD_MS = 10 * 60 * 1000;
 
 // Componentes comunes y autenticación
 import Login from './components/auth/Login';
@@ -44,6 +47,9 @@ export default function App() {
     }
     return null;
   });
+  const [motivoLogout, setMotivoLogout] = useState(null);
+  const ultimoAccesoRef = useRef(0);
+  const timerInactividadRef = useRef(null);
 
   // 2. Estado de Navegación y UI
   const [pestanaActiva, setPestanaActiva] = useState('dashboard'); // 'dashboard' | 'espacios' | 'busqueda' | 'mapa' | 'finanzas' | 'reportes'
@@ -113,7 +119,24 @@ export default function App() {
   }, [menuContextual.visible]);
 
   // Handlers de Autenticación
+  const handleLogout = useCallback((motivo = null) => {
+    setUsuarioAutenticado(null);
+    localStorage.removeItem('panteon_session');
+    sessionStorage.removeItem('panteon_session');
+    setModalRegistroAbierto(false);
+    setRegistroAEditar(null);
+    setReciboModalItem(null);
+    setFosaHistorialModal(null);
+    setExpedienteModal({ abierto: false, espacio: null, modoInicial: 'expediente' });
+    setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null });
+    if (motivo) {
+      setMotivoLogout(motivo);
+    }
+  }, []);
+
   const handleLogin = (datosUsuario) => {
+    setMotivoLogout(null);
+    ultimoAccesoRef.current = Date.now();
     setUsuarioAutenticado(datosUsuario);
     if (datosUsuario.recordar) {
       localStorage.setItem('panteon_session', JSON.stringify(datosUsuario));
@@ -122,11 +145,82 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
-    setUsuarioAutenticado(null);
-    localStorage.removeItem('panteon_session');
-    sessionStorage.removeItem('panteon_session');
-  };
+  // Detector de Inactividad: Cierra la sesión automáticamente tras 10 minutos sin interacción
+  useEffect(() => {
+    if (!usuarioAutenticado) return;
+
+    // Reinicia el temporizador de inactividad
+    const reiniciarTemporizador = () => {
+      ultimoAccesoRef.current = Date.now();
+      if (timerInactividadRef.current) {
+        clearTimeout(timerInactividadRef.current);
+      }
+      timerInactividadRef.current = setTimeout(() => {
+        handleLogout('Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.');
+      }, TIEMPO_MAXIMO_INACTIVIDAD_MS);
+    };
+
+    // Verificación de respaldo (útil si la computadora entra en reposo o la pestaña estuvo en segundo plano)
+    const verificarInactividad = () => {
+      const tiempoTranscurrido = Date.now() - ultimoAccesoRef.current;
+      if (tiempoTranscurrido >= TIEMPO_MAXIMO_INACTIVIDAD_MS) {
+        handleLogout('Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.');
+      } else {
+        const tiempoRestante = TIEMPO_MAXIMO_INACTIVIDAD_MS - tiempoTranscurrido;
+        if (timerInactividadRef.current) {
+          clearTimeout(timerInactividadRef.current);
+        }
+        timerInactividadRef.current = setTimeout(() => {
+          handleLogout('Tu sesión ha finalizado automáticamente por 10 minutos de inactividad.');
+        }, tiempoRestante);
+      }
+    };
+
+    // Eventos del usuario que cuentan como actividad en el sistema
+    const eventos = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+    
+    // Throttle ligero para no ejecutar reiniciarTemporizador cientos de veces por segundo en mousemove
+    let ultimoRegistro = 0;
+    const manejadorActividad = () => {
+      const ahora = Date.now();
+      if (ahora - ultimoRegistro > 1000) {
+        ultimoRegistro = ahora;
+        reiniciarTemporizador();
+      }
+    };
+
+    // Iniciar temporizador inicial
+    reiniciarTemporizador();
+
+    // Registrar escuchadores globales
+    eventos.forEach(evento => {
+      window.addEventListener(evento, manejadorActividad, { passive: true });
+    });
+
+    // Detectar cuando el usuario regresa a la pestaña
+    const handleVisibilidad = () => {
+      if (document.visibilityState === 'visible') {
+        verificarInactividad();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilidad);
+    window.addEventListener('focus', verificarInactividad);
+
+    // Chequeo periódico cada 30 segundos
+    const intervaloVerificacion = setInterval(verificarInactividad, 30000);
+
+    return () => {
+      if (timerInactividadRef.current) {
+        clearTimeout(timerInactividadRef.current);
+      }
+      clearInterval(intervaloVerificacion);
+      eventos.forEach(evento => {
+        window.removeEventListener(evento, manejadorActividad);
+      });
+      document.removeEventListener('visibilitychange', handleVisibilidad);
+      window.removeEventListener('focus', verificarInactividad);
+    };
+  }, [usuarioAutenticado, handleLogout]);
 
   // Handlers de Negocio con Persistencia en Base de Datos
   const handleGuardarRegistro = async (nuevoRegistro) => {
@@ -252,7 +346,7 @@ export default function App() {
 
   // Si no hay sesión activa, mostramos la pantalla de Login
   if (!usuarioAutenticado) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} mensajeInactividad={motivoLogout} />;
   }
 
   return (

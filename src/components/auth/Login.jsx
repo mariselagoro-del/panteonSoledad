@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, mensajeInactividad = null }) {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -83,6 +83,14 @@ export default function Login({ onLogin }) {
               </span>
             </div>
           </div>
+
+          {/* Mensaje de sesión cerrada por inactividad */}
+          {mensajeInactividad && !error && (
+            <div className="p-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{mensajeInactividad}</span>
+            </div>
+          )}
 
           {/* 2. Mensaje de Error */}
           {error && (
