@@ -18,7 +18,9 @@ import {
   agregarPagoAFosa, 
   eliminarPagoDeFosa, 
   ANIO_ACTUAL, 
-  CUOTA_REFRENDO_ANUAL 
+  CUOTA_REFRENDO_ANUAL,
+  CUOTA_MTTO_ANUAL,
+  CUOTA_FAENA_ANUAL
 } from '../../utils/pagosUtils';
 import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
@@ -112,7 +114,17 @@ export default function ModalHistorialPagos({
     }
 
     return resumenFinanciero.listaPagos.filter(pago => {
-      const matchCat = filtroCategoria === 'Todos' || pago.categoria === filtroCategoria;
+      let matchCat = filtroCategoria === 'Todos';
+      if (filtroCategoria === 'MTTO') {
+        matchCat = pago.categoria === 'MTTO' || pago.categoria === 'MTTO + Faena' || pago.categoria === 'Refrendo';
+      } else if (filtroCategoria === 'Faena') {
+        matchCat = pago.categoria === 'Faena' || pago.categoria === 'MTTO + Faena';
+      } else if (filtroCategoria === 'Servicio') {
+        matchCat = pago.categoria === 'Servicio' || pago.categoria === 'Construcción';
+      } else if (filtroCategoria !== 'Todos') {
+        matchCat = pago.categoria === filtroCategoria;
+      }
+
       const term = busqueda.trim().toLowerCase();
       if (!term) return matchCat;
 
@@ -207,6 +219,18 @@ export default function ModalHistorialPagos({
       ? `FIS-${folioFisicoLimpio}`
       : `FIS-${Date.now().toString().slice(-4)}`;
 
+    const txt = conceptoLimpio.toLowerCase();
+    let catYaPago = dialogYaPago.categoria;
+    if (!catYaPago) {
+      if (txt.includes('faena') && (txt.includes('mtto') || txt.includes('mantenimiento'))) {
+        catYaPago = 'MTTO + Faena';
+      } else if (txt.includes('faena')) {
+        catYaPago = 'Faena';
+      } else {
+        catYaPago = 'MTTO';
+      }
+    }
+
     const nuevoPago = {
       id: Date.now(),
       folio: folioFinal,
@@ -214,7 +238,7 @@ export default function ModalHistorialPagos({
       origen: 'recibo_fisico',
       fecha: fechaFinal,
       concepto: conceptoLimpio,
-      categoria: 'Refrendo',
+      categoria: catYaPago,
       monto: montoNum,
       metodoPago: dialogYaPago.metodoPago || 'Efectivo en Caja',
       titular: fosaActual.titularNombre || 'Titular Registrado',
@@ -238,7 +262,7 @@ export default function ModalHistorialPagos({
       onRegistrarMovimiento({
         id: Date.now(),
         tipo: 'Ingreso',
-        categoria: 'Refrendo',
+        categoria: catYaPago,
         concepto: `${conceptoLimpio} (Recibo Físico ${folioFisicoLimpio ? `#${folioFisicoLimpio}` : ''}) - Lote ${fosaActual.codigo}`,
         monto: montoNum,
         metodoPago: dialogYaPago.metodoPago || 'Efectivo en Caja',
@@ -579,9 +603,10 @@ export default function ModalHistorialPagos({
                     onChange={(e) => setFormManual({ ...formManual, categoria: e.target.value })}
                     className="w-full bg-white border border-cream-300 rounded-xl px-3 py-2 text-stone-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   >
-                    <option value="Refrendo">Refrendo Anual</option>
+                    <option value="MTTO">Mantenimiento (MTTO)</option>
+                    <option value="Faena">Cuota de Faena</option>
+                    <option value="MTTO + Faena">MTTO + Faena (Conjunto)</option>
                     <option value="Servicio">Servicio Funerario / Inhumación</option>
-                    <option value="Mantenimiento">Mantenimiento de Áreas</option>
                     <option value="Construcción">Permiso de Construcción</option>
                     <option value="Otro">Otro Concepto</option>
                   </select>
@@ -701,20 +726,33 @@ export default function ModalHistorialPagos({
                 Todos los Pagos
               </button>
 
-              {/* Opción 2: Refrendos Anuales */}
+              {/* Opción 2: MTTO (Mantenimiento) */}
               <button
                 type="button"
-                onClick={() => setFiltroCategoria('Refrendo')}
+                onClick={() => setFiltroCategoria('MTTO')}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  filtroCategoria === 'Refrendo'
-                    ? 'bg-teal-600 text-white shadow-2xs'
+                  filtroCategoria === 'MTTO'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
                     : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
                 }`}
               >
-                Refrendos Anuales
+                MTTO (Mantenimiento)
               </button>
 
-              {/* Opción 3: Servicios Funerarios */}
+              {/* Opción 3: Faenas */}
+              <button
+                type="button"
+                onClick={() => setFiltroCategoria('Faena')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filtroCategoria === 'Faena'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
+                }`}
+              >
+                Faenas
+              </button>
+
+              {/* Opción 4: Servicios Funerarios */}
               <button
                 type="button"
                 onClick={() => setFiltroCategoria('Servicio')}
@@ -936,8 +974,25 @@ export default function ModalHistorialPagos({
 
                           {/* Concepto */}
                           <td className="py-3 px-4">
-                            <div className="font-black text-stone-900">
-                              {item.concepto}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-black text-stone-900">
+                                {item.concepto}
+                              </span>
+                              {item.categoria === 'MTTO' && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  MTTO
+                                </span>
+                              )}
+                              {item.categoria === 'Faena' && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+                                  Faena
+                                </span>
+                              )}
+                              {item.categoria === 'MTTO + Faena' && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black bg-teal-100 text-teal-800 border border-teal-300">
+                                  MTTO + Faena
+                                </span>
+                              )}
                             </div>
                             {item.observaciones && (
                               <div className="text-[10px] text-stone-500 truncate max-w-sm xl:max-w-md" title={item.observaciones}>
@@ -1202,13 +1257,39 @@ export default function ModalHistorialPagos({
                     type="button"
                     onClick={() => setDialogYaPago({
                       ...dialogYaPago,
-                      concepto: `Refrendo Anual ${ANIO_ACTUAL}`,
-                      monto: CUOTA_REFRENDO_ANUAL,
+                      concepto: `Mantenimiento Anual ${ANIO_ACTUAL} (MTTO)`,
+                      monto: CUOTA_MTTO_ANUAL,
+                      marcarAlCorriente: false
+                    })}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer border border-emerald-200"
+                  >
+                    + Solo MTTO (${CUOTA_MTTO_ANUAL})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDialogYaPago({
+                      ...dialogYaPago,
+                      concepto: `Cuota de Faena ${ANIO_ACTUAL}`,
+                      monto: CUOTA_FAENA_ANUAL,
+                      marcarAlCorriente: false
+                    })}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors cursor-pointer border border-amber-200"
+                  >
+                    + Solo Faena (${CUOTA_FAENA_ANUAL})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDialogYaPago({
+                      ...dialogYaPago,
+                      concepto: `Paquete Completo ${ANIO_ACTUAL}: MTTO + Faena`,
+                      monto: CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL,
                       marcarAlCorriente: resumenFinanciero.aniosPendientes.length <= 1
                     })}
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-cream-100 hover:bg-cream-200 text-stone-700 transition-colors cursor-pointer border border-cream-300"
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer border border-teal-200 font-black"
                   >
-                    + Refrendo {ANIO_ACTUAL} ($250)
+                    + MTTO + Faena (${CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL})
                   </button>
 
                   {resumenFinanciero.adeudoEstimado > 0 && (
@@ -1220,7 +1301,7 @@ export default function ModalHistorialPagos({
                         monto: resumenFinanciero.adeudoEstimado,
                         marcarAlCorriente: true
                       })}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer border border-emerald-200"
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-cream-100 hover:bg-cream-200 text-stone-700 transition-colors cursor-pointer border border-cream-300"
                     >
                       + Liquidación Total (${resumenFinanciero.adeudoEstimado})
                     </button>
@@ -1233,7 +1314,7 @@ export default function ModalHistorialPagos({
                       concepto: 'Abono a cuenta de refrendos pendientes',
                       marcarAlCorriente: false
                     })}
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors cursor-pointer border border-amber-200"
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-cream-50 hover:bg-cream-100 text-stone-600 transition-colors cursor-pointer border border-cream-200"
                   >
                     + Abono Parcial
                   </button>

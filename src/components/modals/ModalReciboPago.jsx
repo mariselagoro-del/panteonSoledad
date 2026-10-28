@@ -12,19 +12,27 @@ import {
 } from 'lucide-react';
 import plantillaLimpia from '../../assets/recibo-fondo-limpio.jpg';
 import ModalAlerta from '../common/ModalAlerta';
-import { agregarPagoAFosa } from '../../utils/pagosUtils';
+import { 
+  agregarPagoAFosa,
+  ANIO_ACTUAL,
+  CUOTA_MTTO_ANUAL,
+  CUOTA_FAENA_ANUAL
+} from '../../utils/pagosUtils';
 import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 const CONCEPTOS_PREDEFINIDOS = [
-  { label: 'Refrendo Anual 2026 ($250.00 MXN)', concepto: 'Refrendo Anual de Fosa 2026', monto: 250.0 },
-  { label: 'Refrendo Anual 2025 / Rezago ($250.00 MXN)', concepto: 'Refrendo Anual Extemporáneo 2025', monto: 250.0 },
-  { label: 'Derechos de Inhumación / Sepelio ($1,500.00 MXN)', concepto: 'Derechos de Inhumación y Sepelio', monto: 1500.0 },
-  { label: 'Mantenimiento General de Áreas ($300.00 MXN)', concepto: 'Cuota de Mantenimiento de Pasillos y Jardinería', monto: 300.0 },
-  { label: 'Concesión de Nicho para Cenizas ($3,500.00 MXN)', concepto: 'Título de Concesión de Nicho', monto: 3500.0 },
-  { label: 'Expedición de Duplicado de Título ($200.00 MXN)', concepto: 'Reposición y Duplicado de Cédula de Título', monto: 200.0 },
-  { label: 'Permiso de Construcción / Monumento ($450.00 MXN)', concepto: 'Permiso de Obra para Monumento / Lápida', monto: 450.0 },
-  { label: 'Derechos de Exhumación / Traslado ($800.00 MXN)', concepto: 'Derechos de Exhumación y Traslado de Restos', monto: 800.0 },
-  { label: 'Otro Concepto Personalizado...', concepto: '', monto: '' }
+  { label: `Mantenimiento Anual ${ANIO_ACTUAL} (MTTO) ($250.00 MXN)`, concepto: `Mantenimiento Anual de Fosa ${ANIO_ACTUAL}`, monto: 250.0, categoria: 'MTTO' },
+  { label: `Cuota de Faena ${ANIO_ACTUAL} ($250.00 MXN)`, concepto: `Cuota de Faena Comunitaria ${ANIO_ACTUAL}`, monto: 250.0, categoria: 'Faena' },
+  { label: `Paquete Completo ${ANIO_ACTUAL}: MTTO + Faena ($500.00 MXN)`, concepto: `Mantenimiento y Cuota de Faena ${ANIO_ACTUAL}`, monto: 500.0, categoria: 'MTTO + Faena' },
+  { label: 'Mantenimiento con Rezago (MTTO) ($250.00 MXN)', concepto: 'Mantenimiento de Fosa Extemporáneo', monto: 250.0, categoria: 'MTTO' },
+  { label: 'Cuota de Faena con Rezago ($250.00 MXN)', concepto: 'Cuota de Faena Extemporánea', monto: 250.0, categoria: 'Faena' },
+  { label: 'Paquete Completo Rezago: MTTO + Faena ($500.00 MXN)', concepto: 'Mantenimiento y Cuota de Faena Extemporánea', monto: 500.0, categoria: 'MTTO + Faena' },
+  { label: 'Derechos de Inhumación / Sepelio ($1,500.00 MXN)', concepto: 'Derechos de Inhumación y Sepelio', monto: 1500.0, categoria: 'Servicio' },
+  { label: 'Concesión de Nicho para Cenizas ($3,500.00 MXN)', concepto: 'Título de Concesión de Nicho', monto: 3500.0, categoria: 'Servicio' },
+  { label: 'Expedición de Duplicado de Título ($200.00 MXN)', concepto: 'Reposición y Duplicado de Cédula de Título', monto: 200.0, categoria: 'Servicio' },
+  { label: 'Permiso de Construcción / Monumento ($450.00 MXN)', concepto: 'Permiso de Obra para Monumento / Lápida', monto: 450.0, categoria: 'Construcción' },
+  { label: 'Derechos de Exhumación / Traslado ($800.00 MXN)', concepto: 'Derechos de Exhumación y Traslado de Restos', monto: 800.0, categoria: 'Servicio' },
+  { label: 'Otro Concepto Personalizado...', concepto: '', monto: '', categoria: 'Otro' }
 ];
 
 /**
@@ -268,12 +276,27 @@ export default function ModalReciboPago({
       return;
     }
 
+    const catEncontrada = CONCEPTOS_PREDEFINIDOS.find(c => c.concepto === conceptoFinal)?.categoria;
+    let categoriaCalculada = catEncontrada;
+    if (!categoriaCalculada) {
+      const txt = conceptoFinal.toLowerCase();
+      if (txt.includes('faena') && (txt.includes('mtto') || txt.includes('mantenimiento'))) {
+        categoriaCalculada = 'MTTO + Faena';
+      } else if (txt.includes('faena')) {
+        categoriaCalculada = 'Faena';
+      } else if (txt.includes('mtto') || txt.includes('mantenimiento') || txt.includes('refrendo')) {
+        categoriaCalculada = 'MTTO';
+      } else {
+        categoriaCalculada = 'Servicio';
+      }
+    }
+
     const nuevoPagoFosa = {
       id: Date.now(),
       folio: folio,
       fecha: fechaPago,
       concepto: conceptoFinal,
-      categoria: conceptoFinal.includes('Refrendo') ? 'Refrendo' : 'Servicio',
+      categoria: categoriaCalculada,
       monto: montoNumerico,
       metodoPago: metodoPago,
       titular: nombreTitular,
@@ -346,6 +369,21 @@ export default function ModalReciboPago({
       return;
     }
 
+    const catEncontrada = CONCEPTOS_PREDEFINIDOS.find(c => c.concepto === conceptoFinal)?.categoria;
+    let categoriaCalculada = catEncontrada;
+    if (!categoriaCalculada) {
+      const txt = conceptoFinal.toLowerCase();
+      if (txt.includes('faena') && (txt.includes('mtto') || txt.includes('mantenimiento'))) {
+        categoriaCalculada = 'MTTO + Faena';
+      } else if (txt.includes('faena')) {
+        categoriaCalculada = 'Faena';
+      } else if (txt.includes('mtto') || txt.includes('mantenimiento') || txt.includes('refrendo')) {
+        categoriaCalculada = 'MTTO';
+      } else {
+        categoriaCalculada = 'Servicio';
+      }
+    }
+
     const nuevoPagoFosa = {
       id: Date.now(),
       folio: folio,
@@ -353,7 +391,7 @@ export default function ModalReciboPago({
       origen: 'recibo_fisico',
       fecha: fechaPago,
       concepto: conceptoFinal,
-      categoria: conceptoFinal.includes('Refrendo') ? 'Refrendo' : 'Servicio',
+      categoria: categoriaCalculada,
       monto: montoNumerico,
       metodoPago: metodoPago,
       titular: nombreTitular,
@@ -584,6 +622,85 @@ export default function ModalReciboPago({
                     placeholder="55 1234 5678"
                     className="w-full bg-white border border-cream-300 rounded-xl p-2.5 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                   />
+                </div>
+              </div>
+
+              {/* Selector Rápido de Cuotas: Mantenimiento (MTTO) y Faenas */}
+              <div className="p-3.5 bg-cream-50/80 rounded-2xl border border-cream-300 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-stone-800 text-xs">
+                    <Receipt className="w-4 h-4 text-teal-700" />
+                    <span>Cuotas Anuales: Mantenimiento (MTTO) y Faenas</span>
+                  </div>
+                  <span className="text-[10px] text-stone-500 font-medium">Cobro individual o conjunto</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {/* Botón 1: Solo MTTO */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConceptoSeleccionado(`Mantenimiento Anual de Fosa ${ANIO_ACTUAL}`);
+                      setMonto(String(CUOTA_MTTO_ANUAL));
+                    }}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
+                      conceptoSeleccionado?.includes('Mantenimiento') && !conceptoSeleccionado?.includes('Faena')
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[11px] block font-black">Solo MTTO</span>
+                      {conceptoSeleccionado?.includes('Mantenimiento') && !conceptoSeleccionado?.includes('Faena') && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                      )}
+                    </div>
+                    <span className="text-xs font-mono font-black mt-1">$250.00 MXN</span>
+                  </button>
+
+                  {/* Botón 2: Solo Faena */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConceptoSeleccionado(`Cuota de Faena Comunitaria ${ANIO_ACTUAL}`);
+                      setMonto(String(CUOTA_FAENA_ANUAL));
+                    }}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
+                      conceptoSeleccionado?.includes('Faena') && !conceptoSeleccionado?.includes('Mantenimiento')
+                        ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
+                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[11px] block font-black">Solo Faena</span>
+                      {conceptoSeleccionado?.includes('Faena') && !conceptoSeleccionado?.includes('Mantenimiento') && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-200" />
+                      )}
+                    </div>
+                    <span className="text-xs font-mono font-black mt-1">$250.00 MXN</span>
+                  </button>
+
+                  {/* Botón 3: Ambos Juntos (MTTO + Faena) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConceptoSeleccionado(`Mantenimiento y Cuota de Faena ${ANIO_ACTUAL}`);
+                      setMonto(String(CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL));
+                    }}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
+                      conceptoSeleccionado?.includes('Mantenimiento') && conceptoSeleccionado?.includes('Faena')
+                        ? 'bg-teal-700 text-white border-teal-800 shadow-xs'
+                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[11px] block font-black">MTTO + Faena (Juntos)</span>
+                      {conceptoSeleccionado?.includes('Mantenimiento') && conceptoSeleccionado?.includes('Faena') && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-200" />
+                      )}
+                    </div>
+                    <span className="text-xs font-mono font-black mt-1">$500.00 MXN</span>
+                  </button>
                 </div>
               </div>
 

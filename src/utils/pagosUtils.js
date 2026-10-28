@@ -3,6 +3,8 @@
 
 export const ANIO_ACTUAL = 2026;
 export const CUOTA_REFRENDO_ANUAL = 250.0;
+export const CUOTA_MTTO_ANUAL = 250.0;
+export const CUOTA_FAENA_ANUAL = 250.0;
 
 /**
  * Determina el año base para la evaluación de refrendos de una fosa.
@@ -79,18 +81,22 @@ export function obtenerHistorialPagosFosa(espacio) {
     const yaEnPagos = (pagoIdMant && idsEnPagos.has(pagoIdMant)) || (folioMant && foliosEnPagos.has(folioMant));
 
     if (!yaEnPagos) {
+      const txt = `${m.concepto || ''} ${m.folio || ''}`.toLowerCase();
+      const esFaena = txt.includes('faena');
+      const categoria = m.categoria || (esFaena ? 'Faena' : 'MTTO');
+
       lista.push({
         id: m.id || `mant-${espacio.codigo || espacio.id}-${m.anio || idx}`,
         folio: m.folio || `REF-${m.anio || 'HIST'}`,
         anio: anio,
         fecha: m.fecha || (anio ? `${anio}-01-15` : 'N/D'),
-        concepto: m.concepto || `Refrendo Anual de Fosa ${anio || ''}`.trim(),
-        categoria: 'Refrendo',
-        monto: Number(m.monto) || CUOTA_REFRENDO_ANUAL,
+        concepto: m.concepto || (esFaena ? `Cuota de Faena ${anio || ''}` : `Mantenimiento de Fosa ${anio || ''}`).trim(),
+        categoria: categoria,
+        monto: Number(m.monto) || (esFaena ? CUOTA_FAENA_ANUAL : CUOTA_MTTO_ANUAL),
         metodoPago: m.metodoPago || 'Efectivo en Caja',
         titular: m.titular || espacio.titularNombre || 'Titular Registrado',
         estatus: m.estatus || 'Pagado',
-        observaciones: m.observaciones || 'Cuota anual de mantenimiento y refrendo catastral.',
+        observaciones: m.observaciones || (esFaena ? 'Cumplimiento o cuota de faena comunitaria.' : 'Cuota anual de mantenimiento catastral (MTTO).'),
         origen: 'mantenimiento'
       });
     }
@@ -98,13 +104,32 @@ export function obtenerHistorialPagosFosa(espacio) {
 
   // 3. Procesar pagos registrados en recibos oficiales (historialPagos)
   pagos.forEach((p, idx) => {
+    const txtPago = `${p.concepto || ''} ${p.observaciones || ''}`.toLowerCase();
+    let catPago = p.categoria;
+    if (!catPago || catPago === 'Refrendo') {
+      if (txtPago.includes('faena') && (txtPago.includes('mtto') || txtPago.includes('mantenimiento'))) {
+        catPago = 'MTTO + Faena';
+      } else if (txtPago.includes('faena')) {
+        catPago = 'Faena';
+      } else if (txtPago.includes('mtto') || txtPago.includes('mantenimiento') || txtPago.includes('refrendo')) {
+        catPago = 'MTTO';
+      } else {
+        catPago = p.categoria || (p.concepto?.includes('Refrendo') ? 'MTTO' : 'Servicio');
+      }
+    }
+
     // Si el pago especifica una lista de años cubiertos
     if (Array.isArray(p.anios) && p.anios.length > 0) {
       p.anios.forEach((a) => {
         const aNum = Number(a);
         if (aNum) aniosCubiertosSet.add(aNum);
       });
-    } else if (p.categoria === 'Refrendo' && p.anio && !p.esAbonoParcial && p.marcarAlCorriente !== false) {
+    } else if (
+      (catPago === 'Refrendo' || catPago === 'MTTO' || catPago === 'MTTO + Faena') &&
+      p.anio &&
+      !p.esAbonoParcial &&
+      p.marcarAlCorriente !== false
+    ) {
       // Sólo si fue asignado de forma unívoca a un año y no fue un abono parcial
       aniosCubiertosSet.add(Number(p.anio));
     }
@@ -115,7 +140,7 @@ export function obtenerHistorialPagosFosa(espacio) {
       anio: p.anio || null,
       fecha: p.fecha || new Date().toISOString().split('T')[0],
       concepto: p.concepto || 'Pago de Servicios Funerarios',
-      categoria: p.categoria || (p.concepto?.includes('Refrendo') ? 'Refrendo' : 'Servicio'),
+      categoria: catPago,
       monto: Number(p.monto) || 0,
       metodoPago: p.metodoPago || 'Efectivo en Caja',
       titular: p.titular || espacio.titularNombre || 'Titular Registrado',
@@ -225,7 +250,13 @@ export function agregarPagoAFosa(espacio, nuevoPago) {
     aniosCubiertos = [...aniosPendientes];
   } else if (
     nuevoPago.categoria === 'Refrendo' ||
+    nuevoPago.categoria === 'MTTO' ||
+    nuevoPago.categoria === 'Faena' ||
+    nuevoPago.categoria === 'MTTO + Faena' ||
     nuevoPago.concepto?.toLowerCase().includes('refrendo') ||
+    nuevoPago.concepto?.toLowerCase().includes('mantenimiento') ||
+    nuevoPago.concepto?.toLowerCase().includes('mtto') ||
+    nuevoPago.concepto?.toLowerCase().includes('faena') ||
     nuevoPago.concepto?.toLowerCase().includes('abono')
   ) {
     // Es un abono o pago parcial: se cubren los años más antiguos primero
