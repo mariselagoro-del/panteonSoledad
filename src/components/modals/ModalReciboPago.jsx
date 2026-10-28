@@ -14,25 +14,19 @@ import plantillaLimpia from '../../assets/recibo-fondo-limpio.jpg';
 import ModalAlerta from '../common/ModalAlerta';
 import { 
   agregarPagoAFosa,
-  ANIO_ACTUAL,
   CUOTA_MTTO_ANUAL,
   CUOTA_FAENA_ANUAL
 } from '../../utils/pagosUtils';
 import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 const CONCEPTOS_PREDEFINIDOS = [
-  { label: `Mantenimiento Anual ${ANIO_ACTUAL} (MTTO) ($250.00 MXN)`, concepto: `Mantenimiento Anual de Fosa ${ANIO_ACTUAL}`, monto: 250.0, categoria: 'MTTO' },
-  { label: `Cuota de Faena ${ANIO_ACTUAL} ($250.00 MXN)`, concepto: `Cuota de Faena Comunitaria ${ANIO_ACTUAL}`, monto: 250.0, categoria: 'Faena' },
-  { label: `Paquete Completo ${ANIO_ACTUAL}: MTTO + Faena ($500.00 MXN)`, concepto: `Mantenimiento y Cuota de Faena ${ANIO_ACTUAL}`, monto: 500.0, categoria: 'MTTO + Faena' },
-  { label: 'Mantenimiento con Rezago (MTTO) ($250.00 MXN)', concepto: 'Mantenimiento de Fosa Extemporáneo', monto: 250.0, categoria: 'MTTO' },
-  { label: 'Cuota de Faena con Rezago ($250.00 MXN)', concepto: 'Cuota de Faena Extemporánea', monto: 250.0, categoria: 'Faena' },
-  { label: 'Paquete Completo Rezago: MTTO + Faena ($500.00 MXN)', concepto: 'Mantenimiento y Cuota de Faena Extemporánea', monto: 500.0, categoria: 'MTTO + Faena' },
-  { label: 'Derechos de Inhumación / Sepelio ($1,500.00 MXN)', concepto: 'Derechos de Inhumación y Sepelio', monto: 1500.0, categoria: 'Servicio' },
-  { label: 'Concesión de Nicho para Cenizas ($3,500.00 MXN)', concepto: 'Título de Concesión de Nicho', monto: 3500.0, categoria: 'Servicio' },
-  { label: 'Expedición de Duplicado de Título ($200.00 MXN)', concepto: 'Reposición y Duplicado de Cédula de Título', monto: 200.0, categoria: 'Servicio' },
-  { label: 'Permiso de Construcción / Monumento ($450.00 MXN)', concepto: 'Permiso de Obra para Monumento / Lápida', monto: 450.0, categoria: 'Construcción' },
-  { label: 'Derechos de Exhumación / Traslado ($800.00 MXN)', concepto: 'Derechos de Exhumación y Traslado de Restos', monto: 800.0, categoria: 'Servicio' },
-  { label: 'Otro Concepto Personalizado...', concepto: '', monto: '', categoria: 'Otro' }
+  { label: `Mantenimiento ($${CUOTA_MTTO_ANUAL.toFixed(2)} MXN)`, concepto: 'Mantenimiento', monto: CUOTA_MTTO_ANUAL, categoria: 'MTTO' },
+  { label: `Faena ($${CUOTA_FAENA_ANUAL.toFixed(2)} MXN)`, concepto: 'Faena', monto: CUOTA_FAENA_ANUAL, categoria: 'Faena' },
+  { label: `Mantenimiento y Faena ($${(CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL).toFixed(2)} MXN)`, concepto: 'Mantenimiento y Faena', monto: CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL, categoria: 'MTTO + Faena' },
+  { label: 'Cambio de titular', concepto: 'Cambio de titular', monto: 500.0, categoria: 'Cambio de titular' },
+  { label: 'Titularidad', concepto: 'Titularidad', monto: 500.0, categoria: 'Titularidad' },
+  { label: 'Depósito de cenizas', concepto: 'Depósito de cenizas', monto: 800.0, categoria: 'Depósito de cenizas' },
+  { label: 'Cooperación voluntaria', concepto: 'Cooperación voluntaria', monto: '', categoria: 'Cooperación voluntaria' }
 ];
 
 /**
@@ -187,13 +181,6 @@ export default function ModalReciboPago({
     }
     return CONCEPTOS_PREDEFINIDOS[0].concepto;
   });
-  const [conceptoPersonalizado, setConceptoPersonalizado] = useState(() => {
-    if (pagoInicial?.concepto) {
-      const encontrado = CONCEPTOS_PREDEFINIDOS.find(c => c.concepto === pagoInicial.concepto);
-      return encontrado ? '' : pagoInicial.concepto;
-    }
-    return '';
-  });
   const [monto, setMonto] = useState(() => pagoInicial?.monto !== undefined ? String(pagoInicial.monto) : String(CONCEPTOS_PREDEFINIDOS[0].monto));
   const [metodoPago, setMetodoPago] = useState(() => pagoInicial?.metodoPago || 'Efectivo en Caja');
   
@@ -248,7 +235,7 @@ export default function ModalReciboPago({
     }
   };
 
-  const conceptoFinal = conceptoSeleccionado || conceptoPersonalizado || 'Pago de Servicios Funerarios';
+  const conceptoFinal = conceptoSeleccionado || 'Mantenimiento';
   const montoNumerico = Number(monto) || 0;
 
   const handleRegistrarPago = (e) => {
@@ -625,82 +612,45 @@ export default function ModalReciboPago({
                 </div>
               </div>
 
-              {/* Selector Rápido de Cuotas: Mantenimiento (MTTO) y Faenas */}
+              {/* Selector Rápido de Conceptos Oficiales de Pago */}
               <div className="p-3.5 bg-cream-50/80 rounded-2xl border border-cream-300 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-bold text-stone-800 text-xs">
                     <Receipt className="w-4 h-4 text-teal-700" />
-                    <span>Cuotas Anuales: Mantenimiento (MTTO) y Faenas</span>
+                    <span>Conceptos Oficiales de Pago</span>
                   </div>
-                  <span className="text-[10px] text-stone-500 font-medium">Cobro individual o conjunto</span>
+                  <span className="text-[10px] text-stone-500 font-medium">Selección rápida</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {/* Botón 1: Solo MTTO */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConceptoSeleccionado(`Mantenimiento Anual de Fosa ${ANIO_ACTUAL}`);
-                      setMonto(String(CUOTA_MTTO_ANUAL));
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
-                      conceptoSeleccionado?.includes('Mantenimiento') && !conceptoSeleccionado?.includes('Faena')
-                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
-                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-[11px] block font-black">Solo MTTO</span>
-                      {conceptoSeleccionado?.includes('Mantenimiento') && !conceptoSeleccionado?.includes('Faena') && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
-                      )}
-                    </div>
-                    <span className="text-xs font-mono font-black mt-1">$250.00 MXN</span>
-                  </button>
-
-                  {/* Botón 2: Solo Faena */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConceptoSeleccionado(`Cuota de Faena Comunitaria ${ANIO_ACTUAL}`);
-                      setMonto(String(CUOTA_FAENA_ANUAL));
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
-                      conceptoSeleccionado?.includes('Faena') && !conceptoSeleccionado?.includes('Mantenimiento')
-                        ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
-                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-[11px] block font-black">Solo Faena</span>
-                      {conceptoSeleccionado?.includes('Faena') && !conceptoSeleccionado?.includes('Mantenimiento') && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-200" />
-                      )}
-                    </div>
-                    <span className="text-xs font-mono font-black mt-1">$250.00 MXN</span>
-                  </button>
-
-                  {/* Botón 3: Ambos Juntos (MTTO + Faena) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConceptoSeleccionado(`Mantenimiento y Cuota de Faena ${ANIO_ACTUAL}`);
-                      setMonto(String(CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL));
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
-                      conceptoSeleccionado?.includes('Mantenimiento') && conceptoSeleccionado?.includes('Faena')
-                        ? 'bg-teal-700 text-white border-teal-800 shadow-xs'
-                        : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-[11px] block font-black">MTTO + Faena (Juntos)</span>
-                      {conceptoSeleccionado?.includes('Mantenimiento') && conceptoSeleccionado?.includes('Faena') && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-200" />
-                      )}
-                    </div>
-                    <span className="text-xs font-mono font-black mt-1">$500.00 MXN</span>
-                  </button>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {CONCEPTOS_PREDEFINIDOS.map((c) => {
+                    const seleccionado = conceptoSeleccionado === c.concepto;
+                    return (
+                      <button
+                        key={c.concepto}
+                        type="button"
+                        onClick={() => {
+                          setConceptoSeleccionado(c.concepto);
+                          setMonto(c.monto !== '' ? String(c.monto) : '');
+                        }}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
+                          seleccionado
+                            ? 'bg-teal-700 text-white border-teal-800 shadow-xs ring-2 ring-teal-500/30'
+                            : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-[11px] block font-black truncate">{c.concepto}</span>
+                          {seleccionado && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-teal-200 shrink-0 ml-1" />
+                          )}
+                        </div>
+                        <span className={`text-[10px] font-mono font-bold mt-1.5 ${seleccionado ? 'text-teal-100' : 'text-stone-500'}`}>
+                          {c.monto !== '' ? `$${Number(c.monto).toFixed(2)} MXN` : 'Monto libre'}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -711,7 +661,7 @@ export default function ModalReciboPago({
                   <select
                     value={conceptoSeleccionado}
                     onChange={handleConceptoChange}
-                    className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
+                    className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer text-xs"
                   >
                     {CONCEPTOS_PREDEFINIDOS.map((c, idx) => (
                       <option key={idx} value={c.concepto}>{c.label}</option>
@@ -729,27 +679,12 @@ export default function ModalReciboPago({
                       required
                       value={monto}
                       onChange={(e) => setMonto(e.target.value)}
-                      placeholder="250.00"
+                      placeholder="0.00"
                       className="w-full bg-white border border-cream-300 rounded-xl pl-8 pr-3 py-2.5 font-mono font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                     />
                   </div>
                 </div>
               </div>
-
-              {/* Si seleccionó Otro concepto */}
-              {!conceptoSeleccionado && (
-                <div className="space-y-1">
-                  <label className="block font-bold text-stone-700">Escribe el Concepto Personalizado *</label>
-                  <input
-                    type="text"
-                    required
-                    value={conceptoPersonalizado}
-                    onChange={(e) => setConceptoPersonalizado(e.target.value)}
-                    placeholder="Ej: Permiso especial para monumento..."
-                    className="w-full bg-white border border-cream-300 rounded-xl p-2.5 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
-                  />
-                </div>
-              )}
 
               {/* Fecha, Folio y Método de Pago */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -113,6 +113,14 @@ export function obtenerHistorialPagosFosa(espacio) {
         catPago = 'Faena';
       } else if (txtPago.includes('mtto') || txtPago.includes('mantenimiento') || txtPago.includes('refrendo')) {
         catPago = 'MTTO';
+      } else if (txtPago.includes('cambio de titular')) {
+        catPago = 'Cambio de titular';
+      } else if (txtPago.includes('titularidad')) {
+        catPago = 'Titularidad';
+      } else if (txtPago.includes('ceniza')) {
+        catPago = 'Depósito de cenizas';
+      } else if (txtPago.includes('cooperaci') || txtPago.includes('voluntari')) {
+        catPago = 'Cooperación voluntaria';
       } else {
         catPago = p.categoria || (p.concepto?.includes('Refrendo') ? 'MTTO' : 'Servicio');
       }
