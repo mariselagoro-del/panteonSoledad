@@ -81,6 +81,7 @@ export default function App() {
 
   // Verificación de perfil y privilegios contables (Solo el Admin puede ver contabilidad/finanzas)
   const esAdmin = usuarioAutenticado?.rol === 'admin' || Boolean(usuarioAutenticado?.permisos?.contabilidad);
+  const puedeRegistrarPagos = esAdmin || usuarioAutenticado?.rol === 'operador' || Boolean(usuarioAutenticado?.permisos?.registrarPagos);
 
   // Derivar la pestaña activa garantizando que operadores no admin jamás accedan a pestañas contables
   const pestanaEfectiva = (!esAdmin && (pestanaActiva === 'finanzas' || pestanaActiva === 'reportes'))
@@ -329,7 +330,7 @@ export default function App() {
   };
 
   const handleAbrirHistorial = (espacio, opciones = {}) => {
-    if (!esAdmin) return;
+    if (!esAdmin && !puedeRegistrarPagos) return;
     const espacioMasReciente = (registrosFosas || []).find(r => r.id === espacio?.id || (r.codigo && r.codigo === espacio?.codigo)) || espacio;
     setFosaHistorialModal({ ...espacioMasReciente, _opcionesHistorial: opciones });
   };
@@ -460,6 +461,7 @@ export default function App() {
           totalConAdeudo={totalConAdeudo}
           usuarioActual={usuarioAutenticado}
           esAdmin={esAdmin}
+          puedeRegistrarPagos={puedeRegistrarPagos}
           onCerrarSesion={handleLogout}
           onToggleMobileMenu={() => setMenuMobileAbierto(prev => !prev)}
         />
@@ -475,7 +477,9 @@ export default function App() {
                 movimientosFinancieros={movimientosFinancieros}
                 onCambiarPestana={setPestanaActiva}
                 onAbrirModalRegistro={() => setModalRegistroAbierto(true)}
+                onAbrirRecibo={(item = null) => setReciboModalItem(item || registrosFosas[0] || null)}
                 esAdmin={esAdmin}
+                puedeRegistrarPagos={puedeRegistrarPagos}
               />
             )}
 
@@ -497,6 +501,7 @@ export default function App() {
                 onActualizarFosa={handleActualizarRegistro}
                 enfocarBusqueda={pestanaEfectiva === 'busqueda'}
                 esAdmin={esAdmin}
+                puedeRegistrarPagos={puedeRegistrarPagos}
               />
             )}
 
@@ -512,6 +517,7 @@ export default function App() {
                 onRegistrarMovimiento={handleRegistrarMovimiento}
                 onActualizarFosa={handleActualizarRegistro}
                 esAdmin={esAdmin}
+                puedeRegistrarPagos={puedeRegistrarPagos}
               />
             )}
 
@@ -548,11 +554,12 @@ export default function App() {
           onAbrirExpediente={handleAbrirExpediente}
           onAbrirHistorial={handleAbrirHistorial}
           onEmitirRecibo={(item) => {
-            if (esAdmin) setReciboModalItem(item);
+            if (esAdmin || puedeRegistrarPagos) setReciboModalItem(item);
           }}
           onImprimirTitulo={(item) => setRegistroAEditar(item)}
           onClose={() => setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null })}
           esAdmin={esAdmin}
+          puedeRegistrarPagos={puedeRegistrarPagos}
         />
       )}
 
@@ -575,11 +582,12 @@ export default function App() {
           onAbrirExpediente={handleAbrirExpediente}
           onAbrirHistorial={handleAbrirHistorial}
           esAdmin={esAdmin}
+          puedeRegistrarPagos={puedeRegistrarPagos}
         />
       )}
 
-      {/* Modal de Cobro y Recibo Oficial de Pago (Solo Administrador) */}
-      {esAdmin && reciboModalItem && (
+      {/* Modal de Cobro y Recibo Oficial de Pago (Admin y Operador que puede registrar pagos) */}
+      {(esAdmin || puedeRegistrarPagos) && reciboModalItem && (
         <ModalReciboPago
           espacio={reciboModalItem}
           registrosFosas={registrosFosas}
@@ -589,8 +597,8 @@ export default function App() {
         />
       )}
 
-      {/* Modal de Historial de Pagos y Refrendos por Tumba (Solo Administrador) */}
-      {esAdmin && fosaHistorialModal && (
+      {/* Modal de Historial de Pagos y Refrendos por Tumba (Admin y Operador que puede registrar pagos) */}
+      {(esAdmin || puedeRegistrarPagos) && fosaHistorialModal && (
         <ModalHistorialPagos
           abierto={!!fosaHistorialModal}
           espacio={fosaHistorialModal}

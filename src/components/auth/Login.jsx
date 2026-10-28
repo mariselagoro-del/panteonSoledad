@@ -44,11 +44,11 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
           usuario: usuarioLimpio,
           rol: 'admin',
           rolEtiqueta: 'Administrador General',
-          permisos: { contabilidad: true, catastro: true },
+          permisos: { contabilidad: true, registrarPagos: true, catastro: true },
           recordar: recordarSesion
         });
       } 
-      // 2. Nuevo Usuario Operador (Acceso completo a todo el sistema EXCEPTO contabilidad)
+      // 2. Nuevo Usuario Operador (Acceso completo a todo el sistema EXCEPTO contabilidad, pero SI puede registrar pagos)
       else if (
         (usuarioLimpio === 'operador' && (passLimpia === 'operador' || passLimpia === 'panteon' || passLimpia === '1234' || passLimpia === 'soledad')) ||
         (usuarioLimpio === 'auxiliar' && (passLimpia === 'auxiliar' || passLimpia === 'panteon' || passLimpia === '1234')) ||
@@ -59,7 +59,7 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
           usuario: usuarioLimpio,
           rol: 'operador',
           rolEtiqueta: 'Operador Catastral',
-          permisos: { contabilidad: false, catastro: true },
+          permisos: { contabilidad: false, registrarPagos: true, catastro: true },
           recordar: recordarSesion
         });
       } else {

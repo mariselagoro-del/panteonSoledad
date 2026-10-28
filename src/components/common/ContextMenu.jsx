@@ -12,7 +12,8 @@ export default function ContextMenu({
   onAbrirExpediente,
   onAbrirHistorial,
   onClose,
-  esAdmin = true
+  esAdmin = true,
+  puedeRegistrarPagos = true
 }) {
   const menuRef = useRef(null);
 
@@ -59,8 +60,8 @@ export default function ContextMenu({
           <span>Adjuntar / Expediente Digital</span>
         </button>
 
-        {/* Opciones Financieras (Solo Administrador) */}
-        {esAdmin && registro.estatusPago === 'Con Adeudo' && (
+        {/* Opciones Financieras (Admin y Operador que puede registrar pagos) */}
+        {(esAdmin || puedeRegistrarPagos) && registro.estatusPago === 'Con Adeudo' && (
           <button
             type="button"
             onClick={() => { if (onAbrirHistorial) onAbrirHistorial(registro, { filtro: 'Adeudos' }); onClose(); }}
@@ -71,8 +72,8 @@ export default function ContextMenu({
           </button>
         )}
 
-        {/* 3. Emitir Recibo de Pago (Solo Administrador) */}
-        {esAdmin && (
+        {/* 3. Emitir Recibo de Pago (Admin y Operador que puede registrar pagos) */}
+        {(esAdmin || puedeRegistrarPagos) && (
           <button
             type="button"
             onClick={() => { if (onEmitirRecibo) onEmitirRecibo(registro); onClose(); }}
@@ -83,8 +84,8 @@ export default function ContextMenu({
           </button>
         )}
 
-        {/* 4. Historial de Pagos y Refrendos (Solo Administrador) */}
-        {esAdmin && (
+        {/* 4. Historial de Pagos y Refrendos (Admin y Operador que puede registrar pagos) */}
+        {(esAdmin || puedeRegistrarPagos) && (
           <button
             type="button"
             onClick={() => { if (onAbrirHistorial) onAbrirHistorial(registro); onClose(); }}

@@ -28,7 +28,8 @@ export default function ModalEditarFosa({
   onClose,
   onAbrirExpediente,
   onAbrirHistorial,
-  esAdmin = true
+  esAdmin = true,
+  puedeRegistrarPagos = true
 }) {
   const itemActual = fosa || registro;
 
@@ -350,8 +351,8 @@ export default function ModalEditarFosa({
             )}
           </div>
 
-          {/* Historial de Pagos y Refrendos - Resumen y Acceso Rápido (Solo Administrador) */}
-          {esAdmin && (() => {
+          {/* Historial de Pagos y Refrendos - Resumen y Acceso Rápido (Admin y Operador que puede registrar pagos) */}
+          {(esAdmin || puedeRegistrarPagos) && (() => {
             const finanzas = obtenerHistorialPagosFosa(itemActual);
             const alCorriente = finanzas.estatusActual === 'Al Corriente';
 

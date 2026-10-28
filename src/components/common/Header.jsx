@@ -24,6 +24,7 @@ export default function Header({
   totalConAdeudo = 0,
   usuarioActual = null,
   esAdmin = true,
+  puedeRegistrarPagos = true,
   onCerrarSesion,
   onToggleMobileMenu
 }) {
@@ -231,7 +232,7 @@ export default function Header({
                       </div>
 
                       <div className="text-right shrink-0">
-                        {esAdmin ? (
+                        {(esAdmin || puedeRegistrarPagos) ? (
                           <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             item.estatusPago === 'Al Corriente'
                               ? 'bg-olive-100 text-olive-800 border-olive-300'

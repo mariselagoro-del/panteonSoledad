@@ -25,7 +25,8 @@ import {
   Folder, 
   Sprout, 
   Layers, 
-  Eye 
+  Eye,
+  Receipt 
 } from 'lucide-react';
 import bannerPanteon from '../assets/banner-panteon.jpg';
 
@@ -122,7 +123,9 @@ export default function Dashboard({
   movimientosFinancieros = [],
   onCambiarPestana,
   onAbrirModalRegistro,
-  esAdmin = true
+  onAbrirRecibo,
+  esAdmin = true,
+  puedeRegistrarPagos = true
 }) {
   // Métricas de tumbas selladas y condición estructural
   const totalTumbasSelladas = useMemo(() => {
@@ -877,7 +880,7 @@ export default function Dashboard({
               </span>
             </button>
 
-            {/* 4. Registrar pago (Admin) / Plano General (Operador) */}
+            {/* 4. Registrar pago (Admin) / Emitir recibo (Operador con permisos de cobro) */}
             {esAdmin ? (
               <button
                 type="button"
@@ -889,6 +892,26 @@ export default function Dashboard({
                 </div>
                 <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
                   Registrar pago
+                </span>
+              </button>
+            ) : puedeRegistrarPagos ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onAbrirRecibo) {
+                    onAbrirRecibo();
+                  } else {
+                    onCambiarPestana('espacios');
+                  }
+                }}
+                className="p-3 bg-[#FAF8F5] hover:bg-[#F2ECE1] border border-stone-200/80 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group"
+                title="Cobrar y emitir recibo oficial de pago"
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center transition-colors">
+                  <Receipt className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-stone-900">
+                  Emitir recibo
                 </span>
               </button>
             ) : (

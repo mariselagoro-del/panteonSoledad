@@ -35,7 +35,8 @@ export default function PlanoGeneral({
   onAbrirHistorial,
   onRegistrarMovimiento,
   onActualizarFosa,
-  esAdmin = true
+  esAdmin = true,
+  puedeRegistrarPagos = true
 }) {
   const [docActivoIdx, setDocActivoIdx] = useState(0);
   const [zoomNivel, setZoomNivel] = useState(1);
@@ -868,8 +869,8 @@ export default function PlanoGeneral({
                 <span>Editar Información del Lote</span>
               </button>
 
-              {/* Botón: Ver Historial de Pagos y Refrendos (Solo Administrador) */}
-              {esAdmin && onAbrirHistorial && (
+              {/* Botón: Ver Historial de Pagos y Refrendos (Admin y Operador que puede registrar pagos) */}
+              {(esAdmin || puedeRegistrarPagos) && onAbrirHistorial && (
                 <button
                   type="button"
                   onClick={() => onAbrirHistorial(fosaSeleccionada)}
@@ -880,8 +881,8 @@ export default function PlanoGeneral({
                 </button>
               )}
 
-              {/* Botón: Registrar Cobro / Refrendo (Solo Administrador) */}
-              {esAdmin && (
+              {/* Botón: Registrar Cobro / Refrendo (Admin y Operador que puede registrar pagos) */}
+              {(esAdmin || puedeRegistrarPagos) && (
                 <button
                   type="button"
                   onClick={() => setModalRecibo({ abierto: true, espacio: fosaSeleccionada })}

@@ -39,7 +39,8 @@ export default function ControlEspacios({
   onRegistrarMovimiento,
   onActualizarFosa,
   enfocarBusqueda = false,
-  esAdmin = true
+  esAdmin = true,
+  puedeRegistrarPagos = true
 }) {
   const [busquedaLocal, setBusquedaLocal] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('Todos'); // 'Todos' | 'Fosa' | 'Nicho'
@@ -169,8 +170,8 @@ export default function ControlEspacios({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botón de Emitir Recibo de Pago (Solo Administrador) */}
-          {esAdmin && (
+          {/* Botón de Emitir Recibo de Pago (Admin y Operador que puede registrar pagos) */}
+          {(esAdmin || puedeRegistrarPagos) && (
             <button
               type="button"
               onClick={() => handleAbrirRecibo(null)}
@@ -249,8 +250,8 @@ export default function ControlEspacios({
             </select>
           </div>
 
-          {/* Filtro Cobro (Solo Administrador) */}
-          {esAdmin && (
+          {/* Filtro Cobro (Admin y Operador que puede registrar pagos) */}
+          {(esAdmin || puedeRegistrarPagos) && (
             <div className="sm:col-span-1 md:col-span-1 lg:col-span-1 xl:col-span-1">
               <select
                 value={filtroPago}
@@ -265,7 +266,7 @@ export default function ControlEspacios({
           )}
 
           {/* Filtro Expediente Digital */}
-          <div className={esAdmin ? "sm:col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-2" : "sm:col-span-1 md:col-span-1 lg:col-span-3 xl:col-span-3"}>
+          <div className={(esAdmin || puedeRegistrarPagos) ? "sm:col-span-1 md:col-span-1 lg:col-span-2 xl:col-span-2" : "sm:col-span-1 md:col-span-1 lg:col-span-3 xl:col-span-3"}>
             <select
               value={filtroExpediente}
               onChange={(e) => handleCambiarFiltro(setFiltroExpediente, e.target.value)}
@@ -471,9 +472,9 @@ export default function ControlEspacios({
                         )}
                       </td>
 
-                      {/* Estatus Refrendo (Interactivo para abrir historial de pagos solo para admin) */}
+                      {/* Estatus Refrendo (Interactivo para abrir historial de pagos para admin y operador con permisos de registrar pagos) */}
                       <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                        {esAdmin ? (
+                        {(esAdmin || puedeRegistrarPagos) ? (
                           <button
                             type="button"
                             onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
@@ -523,8 +524,8 @@ export default function ControlEspacios({
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5 opacity-90 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                           
-                          {/* Botón: Ya Pagó (Solo Administrador) */}
-                          {esAdmin && !alCorriente && (
+                          {/* Botón: Ya Pagó (Admin y Operador que puede registrar pagos) */}
+                          {(esAdmin || puedeRegistrarPagos) && !alCorriente && (
                             <button
                               type="button"
                               onClick={() => onAbrirHistorial && onAbrirHistorial(item, { filtro: 'Adeudos' })}
@@ -535,8 +536,8 @@ export default function ControlEspacios({
                             </button>
                           )}
 
-                          {/* Botón: Ver Historial de Pagos de la Tumba (Solo Administrador) */}
-                          {esAdmin && (
+                          {/* Botón: Ver Historial de Pagos de la Tumba (Admin y Operador que puede registrar pagos) */}
+                          {(esAdmin || puedeRegistrarPagos) && (
                             <button
                               type="button"
                               onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
@@ -557,8 +558,8 @@ export default function ControlEspacios({
                             <FolderPlus className="w-3.5 h-3.5 text-stone-600" />
                           </button>
 
-                          {/* Botón Emitir / Imprimir Recibo de Pago (Solo Administrador) */}
-                          {esAdmin && (
+                          {/* Botón Emitir / Imprimir Recibo de Pago (Admin y Operador que puede registrar pagos) */}
+                          {(esAdmin || puedeRegistrarPagos) && (
                             <button
                               type="button"
                               onClick={() => handleAbrirRecibo(item)}
