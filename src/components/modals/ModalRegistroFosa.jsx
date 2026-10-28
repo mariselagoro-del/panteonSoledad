@@ -22,6 +22,7 @@ import {
   leerArchivoParaExpediente,
   calcularEstadoExpediente
 } from '../../constants/expedienteConfig';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
 /**
@@ -339,12 +340,12 @@ export default function ModalRegistroFosa({
 
             {/* 2. Código / Lote (Automático) */}
             <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Código / Lote (Automático) *</label>
+              <label className="block font-bold text-stone-700">Número de Fosa (Automático) *</label>
               <input
                 type="text"
                 disabled
                 readOnly
-                value={formData.codigo || codigoActualOCalculado}
+                value={formatearNumeroFosa(formData.codigo || codigoActualOCalculado)}
                 className="w-full bg-cream-100/90 border border-cream-300 rounded-xl p-2.5 font-mono font-black text-teal-900 cursor-not-allowed select-all shadow-inner"
               />
               <span className="text-[10px] text-stone-500 block">

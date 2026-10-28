@@ -31,6 +31,7 @@ import {
   calcularEstadoExpediente, 
   leerArchivoParaExpediente 
 } from '../../constants/expedienteConfig';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 import { panteonService } from '../../services/panteonService';
 
@@ -443,7 +444,7 @@ export default function ModalExpedienteElectronico({
                   Expediente Electrónico Digital
                 </h2>
                 <span className="bg-teal-900/90 text-teal-200 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border border-teal-600/60">
-                  {item.codigo}
+                  Fosa {formatearNumeroFosa(item.codigo)}
                 </span>
               </div>
               <p className="text-[11px] text-teal-200/80">

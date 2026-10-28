@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { calcularEstadoExpediente } from '../../constants/expedienteConfig';
 import { obtenerHistorialPagosFosa } from '../../utils/pagosUtils';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
 export default function ModalEditarFosa({
@@ -158,7 +159,7 @@ export default function ModalEditarFosa({
             <Pencil className="w-5 h-5 text-white" />
             <div>
               <h3 className="font-black text-sm tracking-wide">
-                Editar Espacio Funerario: {itemActual?.codigo}
+                Editar Espacio Funerario: Fosa {formatearNumeroFosa(itemActual?.codigo)}
               </h3>
               <p className="text-[11px] text-cream-100">
                 Panteón La Soledad
@@ -181,11 +182,11 @@ export default function ModalEditarFosa({
           {/* Fila 1: Identificación y Estado */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Código / Lote</label>
+              <label className="block font-bold text-stone-700">Número de Fosa</label>
               <input
                 type="text"
                 disabled
-                value={formData.codigo}
+                value={formatearNumeroFosa(formData.codigo)}
                 className="w-full bg-cream-50 border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900"
               />
             </div>

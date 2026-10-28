@@ -27,7 +27,7 @@ import {
   TrendingUp,
   PieChart as PieChartIcon
 } from 'lucide-react';
-import { coincideTexto } from '../utils/busquedaUtils';
+import { coincideTexto, formatearNumeroFosa } from '../utils/busquedaUtils';
 
 // Paleta oficial de colores para gráficas (Panteón La Soledad)
 const COLORES = {
@@ -1207,7 +1207,7 @@ export default function ReportesIngresos({
                             </span>
                           </td>
                           <td className="py-2.5 px-4 font-mono text-[11px] text-stone-800">
-                            {fam.fosas.slice(0, 4).join(', ')}
+                            {fam.fosas.slice(0, 4).map(formatearNumeroFosa).join(', ')}
                             {fam.fosas.length > 4 && ` (+${fam.fosas.length - 4})`}
                           </td>
                           <td className="py-2.5 px-3 font-mono text-stone-600">
@@ -1379,7 +1379,7 @@ export default function ReportesIngresos({
                 <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-cream-100 text-stone-900 font-black border-b border-cream-300 text-[10px] uppercase">
                     <tr>
-                      <th className="py-2.5 px-3 text-center">Fosa / Código</th>
+                      <th className="py-2.5 px-3 text-center">Fosa / Lote</th>
                       <th className="py-2.5 px-4">Sección</th>
                       <th className="py-2.5 px-4">Titular o Responsable</th>
                       <th className="py-2.5 px-3">Teléfono</th>
@@ -1401,7 +1401,7 @@ export default function ReportesIngresos({
                         <tr key={`adeudo-row-${idx}`} className="hover:bg-cream-50">
                           <td className="py-2.5 px-3 text-center">
                             <span className="font-mono font-bold px-2 py-0.5 bg-rose-100 text-rose-900 border border-rose-200 rounded">
-                              {adeudo.codigo}
+                              {formatearNumeroFosa(adeudo.codigo)}
                             </span>
                           </td>
                           <td className="py-2.5 px-4 font-bold text-stone-700">{adeudo.seccionNombre}</td>

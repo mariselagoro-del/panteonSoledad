@@ -1,6 +1,7 @@
 // src/components/common/ContextMenu.jsx
 import { useEffect, useRef } from 'react';
 import { Pencil, Printer, Receipt, Eye, FolderPlus, History, CheckCircle2 } from 'lucide-react';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 export default function ContextMenu({
   x,
@@ -36,7 +37,7 @@ export default function ContextMenu({
       className="fixed z-50 bg-white border border-cream-300 shadow-2xl rounded-2xl p-1.5 min-w-[230px] text-xs font-semibold text-stone-800 animate-in fade-in zoom-in-95"
     >
       <div className="px-3 py-1.5 border-b border-cream-200 text-[10px] uppercase font-bold text-stone-400">
-        Lote: {registro.codigo}
+        Fosa: {formatearNumeroFosa(registro.codigo)}
       </div>
 
       <div className="space-y-0.5 mt-1">

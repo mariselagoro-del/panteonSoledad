@@ -1,6 +1,7 @@
 // src/components/modals/ModalCedulaTitulo.jsx
 import { Printer, X, Award } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 export default function ModalCedulaTitulo({ espacio, onCerrar }) {
   if (!espacio) return null;
@@ -92,7 +93,7 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
           {/* Folio y Fecha */}
           <div className="flex justify-between items-center text-xs font-sans text-stone-600 pb-2">
             <div>
-              <strong>FOLIO OFICIAL:</strong> <span className="font-mono text-teal-900 font-bold">TIT-{espacio.codigo}</span>
+              <strong>FOLIO OFICIAL:</strong> <span className="font-mono text-teal-900 font-bold">TIT-{formatearNumeroFosa(espacio.codigo)}</span>
             </div>
             <div>
               <strong>FECHA DE EXPEDICIÓN:</strong> {fechaHoy}
@@ -111,8 +112,8 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
             
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 border-b border-cream-200 pb-3">
               <div>
-                <span className="block text-stone-500 font-bold text-[10px] uppercase">Código / Lote:</span>
-                <span className="font-mono font-black text-base text-teal-900">{espacio.codigo}</span>
+                <span className="block text-stone-500 font-bold text-[10px] uppercase">Número de Fosa:</span>
+                <span className="font-mono font-black text-base text-teal-900">{formatearNumeroFosa(espacio.codigo)}</span>
               </div>
               <div>
                 <span className="block text-stone-500 font-bold text-[10px] uppercase">Sección:</span>

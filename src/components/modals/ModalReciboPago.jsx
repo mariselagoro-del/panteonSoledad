@@ -13,7 +13,7 @@ import {
 import plantillaLimpia from '../../assets/recibo-fondo-limpio.jpg';
 import ModalAlerta from '../common/ModalAlerta';
 import { agregarPagoAFosa } from '../../utils/pagosUtils';
-import { coincideEspacioConBusqueda } from '../../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 const CONCEPTOS_PREDEFINIDOS = [
   { label: 'Refrendo Anual 2026 ($250.00 MXN)', concepto: 'Refrendo Anual de Fosa 2026', monto: 250.0 },
@@ -471,7 +471,7 @@ export default function ModalReciboPago({
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-teal-900">{f.codigo}</span>
+                              <span className="font-mono font-bold text-teal-900">Fosa {formatearNumeroFosa(f.codigo)}</span>
                               <span className="font-bold text-stone-800">{f.titularNombre || 'Sin titular'}</span>
                             </div>
                             {f._difuntoCoincidente && (
@@ -491,7 +491,7 @@ export default function ModalReciboPago({
                 <div className="p-3 bg-teal-50 border border-teal-200 rounded-2xl flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="px-2.5 py-1 bg-teal-600 text-white font-mono font-black text-xs rounded-lg">
-                      {espacioSeleccionado.codigo}
+                      Fosa {formatearNumeroFosa(espacioSeleccionado.codigo)}
                     </span>
                     <div>
                       <p className="font-bold text-stone-900">{espacioSeleccionado.titularNombre || 'Sin titular registrado'}</p>
@@ -772,7 +772,7 @@ export default function ModalReciboPago({
                 <ReciboFisico
                   tipoCopia="ORIGINAL (CONTRIBUYENTE)"
                   folio={folio}
-                  noTumba={espacioSeleccionado?.codigo || 'N/A'}
+                  noTumba={formatearNumeroFosa(espacioSeleccionado?.codigo) || 'N/A'}
                   seccion={espacioSeleccionado?.seccionNombre || 'General'}
                   monto={monto}
                   nombreTitular={nombreTitular}
@@ -804,7 +804,7 @@ export default function ModalReciboPago({
                 <ReciboFisico
                   tipoCopia="COPIA (ADMINISTRACIÓN)"
                   folio={folio}
-                  noTumba={espacioSeleccionado?.codigo || 'N/A'}
+                  noTumba={formatearNumeroFosa(espacioSeleccionado?.codigo) || 'N/A'}
                   seccion={espacioSeleccionado?.seccionNombre || 'General'}
                   monto={monto}
                   nombreTitular={nombreTitular}

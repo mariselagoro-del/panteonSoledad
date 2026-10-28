@@ -26,7 +26,7 @@ import {
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { obtenerHistorialPagosFosa } from '../utils/pagosUtils';
-import { coincideEspacioConBusqueda } from '../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../utils/busquedaUtils';
 
 export default function PlanoGeneral({
   registrosFosas = [],
@@ -258,7 +258,7 @@ export default function PlanoGeneral({
             {celdas.map((item, idx) => {
               const ocupado = item.historialDifuntos?.length > 0 || (item.titularNombre && item.titularNombre !== 'Disponible / Sin Titular' && item.titularNombre !== 'DISPONIBLE');
               const seleccionada = fosaSeleccionada?.codigo === item.codigo;
-              const numeroDisplay = item.codigo?.split('-')[1] || String(idx + 1).padStart(3, '0');
+              const numeroDisplay = formatearNumeroFosa(item.codigo) || String(idx + 1).padStart(3, '0');
 
               return (
                 <button
@@ -496,9 +496,9 @@ export default function PlanoGeneral({
                 
                 {/* Lote / Código */}
                 <div className="flex justify-between items-center py-1 border-b border-cream-200">
-                  <span className="font-bold text-stone-500">Lote / Código:</span>
-                  <span className="font-mono font-black text-sm text-teal-900 bg-teal-100 px-2 py-0.5 rounded-lg border border-teal-200">
-                    {fosaSeleccionada.codigo}
+                  <span className="font-bold text-stone-500">Lote / Fosa:</span>
+                  <span className="font-mono font-black text-sm text-teal-900 bg-teal-100 px-2 py-0.5 rounded-lg border border-teal-200" title={`Lote interno: ${fosaSeleccionada.codigo}`}>
+                    {formatearNumeroFosa(fosaSeleccionada.codigo)}
                   </span>
                 </div>
 

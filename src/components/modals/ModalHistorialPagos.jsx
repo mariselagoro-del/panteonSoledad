@@ -20,6 +20,7 @@ import {
   ANIO_ACTUAL, 
   CUOTA_REFRENDO_ANUAL 
 } from '../../utils/pagosUtils';
+import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
 export default function ModalHistorialPagos({
@@ -364,7 +365,7 @@ export default function ModalHistorialPagos({
                   Historial de Pagos y Refrendos
                 </h2>
                 <span className="font-mono font-black text-xs bg-teal-800 text-teal-200 px-2.5 py-0.5 rounded-full border border-teal-600">
-                  {fosaActual.codigo}
+                  Fosa {formatearNumeroFosa(fosaActual.codigo)}
                 </span>
                 <span className="text-[11px] font-bold text-teal-100 bg-white/10 px-2 py-0.5 rounded-full">
                   {fosaActual.seccionNombre} - {fosaActual.tipoEspacio}

@@ -29,6 +29,7 @@ import {
   Receipt 
 } from 'lucide-react';
 import bannerPanteon from '../assets/banner-panteon.jpg';
+import { formatearNumeroFosa } from '../utils/busquedaUtils';
 
 // Tooltip flotante para la gráfica de condición de tumbas (Sencillas vs Selladas)
 function TooltipBarrasCondicion({ active, payload, label }) {
@@ -156,11 +157,11 @@ export default function Dashboard({
       }));
     }
     return [
-      { id: 1, codigo: 'F-104', titular: 'Juan Carlos Pérez', condicion: 'Sellada', seccion: 'Sec. 1' },
-      { id: 2, codigo: 'F-089', titular: 'María Elena Gómez', condicion: 'Sencilla', seccion: 'Sec. 2' },
-      { id: 3, codigo: 'N-012', titular: 'Roberto Mendoza', condicion: 'Sencilla', seccion: 'Nichos' },
-      { id: 4, codigo: 'F-201', titular: 'Ana Rosa Morales', condicion: 'Sellada', seccion: 'Sec. 3' },
-      { id: 5, codigo: 'F-145', titular: 'Carlos Slim H.', condicion: 'Sencilla', seccion: 'Sec. 1' }
+      { id: 1, codigo: '104', titular: 'Juan Carlos Pérez', condicion: 'Sellada', seccion: 'Sec. 1' },
+      { id: 2, codigo: '089', titular: 'María Elena Gómez', condicion: 'Sencilla', seccion: 'Sec. 2' },
+      { id: 3, codigo: '012', titular: 'Roberto Mendoza', condicion: 'Sencilla', seccion: 'Nichos' },
+      { id: 4, codigo: '201', titular: 'Ana Rosa Morales', condicion: 'Sellada', seccion: 'Sec. 3' },
+      { id: 5, codigo: '145', titular: 'Carlos Slim H.', condicion: 'Sencilla', seccion: 'Sec. 1' }
     ];
   }, [registrosFosas]);
 
@@ -293,11 +294,11 @@ export default function Dashboard({
       }
     }
     return [
-      { id: 1, fecha: '20 Oct', concepto: 'Inhumación T-104', monto: 4500, estado: 'Pagado' },
-      { id: 2, fecha: '19 Oct', concepto: 'Mant. Anual T-089', monto: 850, estado: 'Pagado' },
-      { id: 3, fecha: '19 Oct', concepto: 'Perpetuidad N-012', monto: 12000, estado: 'Pagado' },
-      { id: 4, fecha: '18 Oct', concepto: 'Exhumación T-201', monto: 3200, estado: 'Pagado' },
-      { id: 5, fecha: '17 Oct', concepto: 'Mant. Anual T-145', monto: 850, estado: 'Pagado' }
+      { id: 1, fecha: '20 Oct', concepto: 'Inhumación Fosa 104', monto: 4500, estado: 'Pagado' },
+      { id: 2, fecha: '19 Oct', concepto: 'Mant. Anual Fosa 089', monto: 850, estado: 'Pagado' },
+      { id: 3, fecha: '19 Oct', concepto: 'Perpetuidad Nicho 012', monto: 12000, estado: 'Pagado' },
+      { id: 4, fecha: '18 Oct', concepto: 'Exhumación Fosa 201', monto: 3200, estado: 'Pagado' },
+      { id: 5, fecha: '17 Oct', concepto: 'Mant. Anual Fosa 145', monto: 850, estado: 'Pagado' }
     ];
   }, [movimientosFinancieros]);
 
@@ -795,7 +796,7 @@ export default function Dashboard({
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-stone-400 font-semibold text-[11px] border-b border-stone-100">
-                    <th className="pb-2 font-medium">Lote</th>
+                    <th className="pb-2 font-medium">Lote / Fosa</th>
                     <th className="pb-2 font-medium">Titular</th>
                     <th className="pb-2 font-medium">Sección</th>
                     <th className="pb-2 font-medium text-right">Condición</th>
@@ -804,7 +805,7 @@ export default function Dashboard({
                 <tbody className="divide-y divide-stone-50">
                   {expedientesRecientes.map((exp) => (
                     <tr key={exp.id} className="hover:bg-stone-50/70 transition-colors">
-                      <td className="py-2.5 font-mono font-bold text-stone-900 text-[11px] whitespace-nowrap">{exp.codigo}</td>
+                      <td className="py-2.5 font-mono font-bold text-stone-900 text-[11px] whitespace-nowrap">{formatearNumeroFosa(exp.codigo)}</td>
                       <td className="py-2.5 font-medium text-stone-800 max-w-[120px] truncate">{exp.titular}</td>
                       <td className="py-2.5 text-stone-500 text-[11px] whitespace-nowrap">{exp.seccion}</td>
                       <td className="py-2.5 text-right whitespace-nowrap">

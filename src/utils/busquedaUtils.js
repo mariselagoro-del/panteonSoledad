@@ -141,3 +141,16 @@ export function coincideEspacioConBusqueda(espacio, query) {
     todosDifuntosCoincidentes: resultadoDifuntos.difuntosCoincidentes
   };
 }
+
+/**
+ * Extrae y formatea exclusivamente el número de fosa/lote,
+ * removiendo prefijos de sección o tipo como F1-, F2-, F3-, F4-, F5-, N-, AP-, F-, etc.
+ * Ejemplo: "F2-001" -> "001", "F1-045" -> "045", "N-012" -> "012", "F-123" -> "123".
+ */
+export function formatearNumeroFosa(codigo) {
+  if (codigo === null || codigo === undefined) return '';
+  const str = String(codigo).trim();
+  const sinPrefijo = str.replace(/^[A-Za-z]+[0-9]*-/, '').trim();
+  return sinPrefijo || str;
+}
+

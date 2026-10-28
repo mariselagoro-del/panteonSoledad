@@ -13,7 +13,7 @@ import {
   ShieldCheck, 
   UserCheck 
 } from 'lucide-react';
-import { coincideEspacioConBusqueda } from '../../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 export default function Header({
   busquedaGlobal = '',
@@ -207,8 +207,8 @@ export default function Header({
                         </span>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-black text-teal-900 group-hover:text-teal-700">
-                              {item.codigo}
+                            <span className="font-mono font-black text-teal-900 group-hover:text-teal-700" title={`Lote interno: ${item.codigo}`}>
+                              Fosa {formatearNumeroFosa(item.codigo)}
                             </span>
                             <span className="text-[10px] text-stone-400 font-medium">
                               {item.seccionNombre}

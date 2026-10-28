@@ -22,7 +22,7 @@ import {
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { calcularEstadoExpediente } from '../constants/expedienteConfig';
-import { coincideEspacioConBusqueda } from '../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../utils/busquedaUtils';
 
 export default function ControlEspacios({
   secciones = [],
@@ -371,8 +371,8 @@ export default function ControlEspacios({
                           <span className={`p-1.5 rounded-lg ${ocupado ? 'bg-rust-100 text-rust-800' : 'bg-olive-100 text-olive-800'}`}>
                             {ocupado ? <Archive className="w-3.5 h-3.5" /> : <Sprout className="w-3.5 h-3.5" />}
                           </span>
-                          <span className="font-mono font-black text-sm text-stone-900">
-                            {item.codigo}
+                          <span className="font-mono font-black text-sm text-stone-900" title={`Lote interno: ${item.codigo}`}>
+                            {formatearNumeroFosa(item.codigo)}
                           </span>
                         </div>
                       </td>
@@ -688,7 +688,7 @@ export default function ControlEspacios({
                       Historial de Inhumaciones
                     </h2>
                     <span className="bg-teal-900/90 text-teal-200 text-xs font-mono font-bold px-2 py-0.5 rounded-md border border-teal-600/60">
-                      {modalDifuntosFosa.codigo}
+                      Fosa {formatearNumeroFosa(modalDifuntosFosa.codigo)}
                     </span>
                   </div>
                   <p className="text-[11px] text-teal-200/80">
