@@ -510,7 +510,7 @@ export default function ModalRegistroFosa({
               </div>
 
               <div className="space-y-1">
-                <label className="block font-bold text-stone-700">Fecha de Inhumación</label>
+                <label className="block font-bold text-stone-700">Fecha de defunción</label>
                 <input
                   type="date"
                   value={formData.difuntoFechaInhumacion}
