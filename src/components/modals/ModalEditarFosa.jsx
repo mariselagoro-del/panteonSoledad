@@ -19,6 +19,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { calcularEstadoExpediente, leerArchivoParaExpediente } from '../../constants/expedienteConfig';
+import { OPCIONES_PARENTESCO, TIPOS_SERVICIO_FUNERARIO } from '../../constants/panteonData';
 import { obtenerHistorialPagosFosa } from '../../utils/pagosUtils';
 import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import { panteonService } from '../../services/panteonService';
@@ -58,7 +59,9 @@ export default function ModalEditarFosa({
     fechaInhumacion: '',
     curp: '',
     causaMuerte: '',
-    edad: ''
+    edad: '',
+    parentesco: '',
+    tipoServicio: 'Inhumación'
   });
 
   const [mostrarFormDifunto, setMostrarFormDifunto] = useState(false);
@@ -176,6 +179,8 @@ export default function ModalEditarFosa({
 
     const difuntoCompleto = {
       ...nuevoDifunto,
+      parentesco: nuevoDifunto.parentesco || 'Titular',
+      tipoServicio: nuevoDifunto.tipoServicio || 'Inhumación',
       id: Date.now()
     };
 
@@ -189,9 +194,22 @@ export default function ModalEditarFosa({
       fechaInhumacion: '',
       curp: '',
       causaMuerte: '',
-      edad: ''
+      edad: '',
+      parentesco: '',
+      tipoServicio: 'Inhumación'
     });
     setMostrarFormDifunto(false);
+  };
+
+  const handleCambiarServicioDifunto = (index, nuevoTipo) => {
+    setFormData(prev => {
+      const copia = [...prev.historialDifuntos];
+      copia[index] = {
+        ...copia[index],
+        tipoServicio: nuevoTipo
+      };
+      return { ...prev, historialDifuntos: copia };
+    });
   };
 
   const handleEliminarDifunto = (index) => {
@@ -596,28 +614,67 @@ export default function ModalEditarFosa({
             </div>
 
             {/* Lista de difuntos */}
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="space-y-2 max-h-56 overflow-y-auto">
               {formData.historialDifuntos.length === 0 ? (
                 <p className="text-stone-400 italic py-2">No hay difuntos registrados en este espacio.</p>
               ) : (
                 formData.historialDifuntos.map((dif, idx) => (
-                  <div key={idx} className="p-3 bg-cream-50 rounded-xl border border-cream-300 flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-bold text-stone-900">
-                        {dif.nombre} {dif.edad ? `(${dif.edad} años)` : ''}
+                  <div key={idx} className="p-3 bg-cream-50 rounded-xl border border-cream-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-stone-900">
+                          {dif.nombre} {dif.edad ? `(${dif.edad} años)` : ''}
+                        </span>
+
+                        {/* Badge de Tipo de Servicio: Inhumación / Exhumación / Reinhumación */}
+                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          dif.tipoServicio === 'Exhumación de restos' || (dif.causaMuerte || '').toLowerCase().includes('exhum')
+                            ? 'bg-amber-100 text-amber-900 border-amber-300'
+                            : dif.tipoServicio === 'Reinhumación'
+                            ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                            : dif.tipoServicio === 'Depósito de cenizas'
+                            ? 'bg-cyan-100 text-cyan-900 border-cyan-300'
+                            : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                        }`}>
+                          {dif.tipoServicio || 'Inhumación'}
+                        </span>
+
+                        {dif.parentesco && (
+                          <span className="text-[10px] font-semibold text-stone-600 bg-white border border-cream-300 px-1.5 py-0.2 rounded">
+                            Parentesco: {dif.parentesco}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-[10px] text-stone-500">
-                        Fecha: {dif.fechaInhumacion || dif.fechaDefuncion || 'N/D'} {dif.causaMuerte ? `• Causa: ${dif.causaMuerte}` : ''}
+
+                      <div className="text-[10px] text-stone-500 flex items-center gap-2 flex-wrap">
+                        <span>Fecha: {dif.fechaInhumacion || dif.fechaDefuncion || 'N/D'}</span>
+                        {dif.causaMuerte && <span>• Causa: {dif.causaMuerte}</span>}
+                        {dif.curp && <span>• CURP: {dif.curp}</span>}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleEliminarDifunto(idx)}
-                      className="p-1 text-stone-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg cursor-pointer"
-                      title="Eliminar difunto"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    {/* Acciones de Difunto: Cambiar Tipo de Servicio o Eliminar */}
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      <select
+                        value={dif.tipoServicio || 'Inhumación'}
+                        onChange={(e) => handleCambiarServicioDifunto(idx, e.target.value)}
+                        className="text-[10px] font-bold bg-white border border-cream-300 rounded-lg p-1 text-stone-700 cursor-pointer focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        title="Cambiar estatus del difunto (Inhumación / Exhumación de restos / Reinhumación)"
+                      >
+                        {TIPOS_SERVICIO_FUNERARIO.map(tipo => (
+                          <option key={tipo} value={tipo}>{tipo}</option>
+                        ))}
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => handleEliminarDifunto(idx)}
+                        className="p-1 text-stone-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg cursor-pointer"
+                        title="Eliminar difunto"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -626,7 +683,7 @@ export default function ModalEditarFosa({
             {/* Formulario para agregar difunto */}
             {mostrarFormDifunto && (
               <div className="p-3.5 bg-cream-100/70 rounded-2xl border border-cream-300 space-y-3 animate-fadeIn">
-                <div className="font-bold text-stone-800">Nuevo Registro de Difunto</div>
+                <div className="font-bold text-stone-800 text-xs">Nuevo Registro de Difunto / Servicio</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div className="sm:col-span-2">
                     <input
@@ -637,21 +694,72 @@ export default function ModalEditarFosa({
                       className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
+
+                  {/* Parentesco con el titular */}
+                  <div>
+                    <select
+                      value={nuevoDifunto.parentesco}
+                      onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, parentesco: e.target.value })}
+                      className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
+                    >
+                      <option value="">Parentesco con titular...</option>
+                      {OPCIONES_PARENTESCO.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tipo de Servicio */}
+                  <div>
+                    <select
+                      value={nuevoDifunto.tipoServicio}
+                      onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, tipoServicio: e.target.value })}
+                      className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
+                    >
+                      {TIPOS_SERVICIO_FUNERARIO.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <input
                       type="date"
                       value={nuevoDifunto.fechaInhumacion}
                       onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, fechaInhumacion: e.target.value })}
+                      title="Fecha de defunción / servicio"
                       className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
+
                   <div>
                     <input
                       type="text"
-                      placeholder="Causa de defunción"
+                      placeholder="Causa de defunción / motivo"
                       value={nuevoDifunto.causaMuerte}
                       onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, causaMuerte: e.target.value })}
                       className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Edad al fallecer"
+                      value={nuevoDifunto.edad}
+                      onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, edad: e.target.value })}
+                      className="w-full bg-white border border-cream-300 rounded-xl p-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="CURP (Opcional)"
+                      value={nuevoDifunto.curp}
+                      onChange={(e) => setNuevoDifunto({ ...nuevoDifunto, curp: e.target.value.toUpperCase() })}
+                      maxLength={18}
+                      className="w-full bg-white border border-cream-300 rounded-xl p-2 font-mono text-stone-900 uppercase focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                     />
                   </div>
                 </div>

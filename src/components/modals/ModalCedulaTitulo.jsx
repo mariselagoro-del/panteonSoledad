@@ -156,9 +156,14 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
                     {espacio.historialDifuntos.map((dif, idx) => (
                       <div key={idx} className="text-xs">
                         <span className="font-extrabold text-stone-900">{dif.nombre}</span>
+                        {dif.parentesco && (
+                          <span className="text-[10px] text-teal-800 ml-1 font-semibold">
+                            [{dif.parentesco}]
+                          </span>
+                        )}
                         {(dif.fechaInhumacion || dif.fechaDefuncion) && (
                           <span className="text-[10px] text-stone-500 ml-1.5 font-mono">
-                            ({dif.fechaInhumacion || dif.fechaDefuncion})
+                            ({dif.tipoServicio ? `${dif.tipoServicio}: ` : ''}{dif.fechaInhumacion || dif.fechaDefuncion})
                           </span>
                         )}
                       </div>

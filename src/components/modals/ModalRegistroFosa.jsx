@@ -22,6 +22,7 @@ import {
   leerArchivoParaExpediente,
   calcularEstadoExpediente
 } from '../../constants/expedienteConfig';
+import { OPCIONES_PARENTESCO, TIPOS_SERVICIO_FUNERARIO } from '../../constants/panteonData';
 import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
@@ -121,11 +122,14 @@ export default function ModalRegistroFosa({
     titularTelefono: '',
     titularCorreo: '',
     observaciones: '',
+    permisoArregloTumba: 'No',
     difuntoNombre: '',
     difuntoFechaInhumacion: '',
     difuntoCurp: '',
     difuntoCausaMuerte: '',
-    difuntoEdad: ''
+    difuntoEdad: '',
+    difuntoParentesco: '',
+    difuntoTipoServicio: 'Inhumación'
   });
 
   // Estado para los documentos del expediente
@@ -147,11 +151,14 @@ export default function ModalRegistroFosa({
       titularTelefono: '',
       titularCorreo: '',
       observaciones: '',
+      permisoArregloTumba: 'No',
       difuntoNombre: '',
       difuntoFechaInhumacion: '',
       difuntoCurp: '',
       difuntoCausaMuerte: '',
-      difuntoEdad: ''
+      difuntoEdad: '',
+      difuntoParentesco: '',
+      difuntoTipoServicio: 'Inhumación'
     });
   }, []);
 
@@ -264,14 +271,18 @@ export default function ModalRegistroFosa({
       titularTelefono: formData.titularTelefono.trim(),
       titularCorreo: formData.titularCorreo.trim(),
       observaciones: formData.observaciones.trim(),
+      permisoArregloTumba: formData.permisoArregloTumba || 'No',
       historialDifuntos: formData.difuntoNombre.trim() ? [
         {
           id: 1,
           nombre: formData.difuntoNombre.trim(),
           fechaInhumacion: formData.difuntoFechaInhumacion,
+          fechaDefuncion: formData.difuntoFechaInhumacion,
           curp: formData.difuntoCurp.trim(),
           causaMuerte: formData.difuntoCausaMuerte.trim(),
-          edad: formData.difuntoEdad
+          edad: formData.difuntoEdad,
+          parentesco: formData.difuntoParentesco || 'Titular',
+          tipoServicio: formData.difuntoTipoServicio || 'Inhumación'
         }
       ] : [],
       expediente: {
@@ -440,6 +451,34 @@ export default function ModalRegistroFosa({
                   <span>Tumba estándar en tierra (sin sellar).</span>
                 </div>
               )}
+
+              {/* Permiso de Arreglo de Tumba */}
+              <div className="space-y-1 sm:col-span-2 pt-2 border-t border-cream-200">
+                <label className="block font-bold text-stone-700 flex items-center gap-1.5">
+                  <FileCheck className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Permiso de Arreglo de Tumba</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['No', 'Sí (Autorizado)', 'En Trámite'].map((opc) => (
+                    <button
+                      key={opc}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, permisoArregloTumba: opc })}
+                      className={`p-2 rounded-xl border text-center transition-all cursor-pointer font-bold text-xs flex items-center justify-center gap-1 ${
+                        formData.permisoArregloTumba === opc
+                          ? 'bg-teal-700 text-white border-teal-800 shadow-xs'
+                          : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
+                      }`}
+                    >
+                      <span>{opc}</span>
+                      {formData.permisoArregloTumba === opc && <CheckCircle2 className="w-3 h-3 text-cream-200" />}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-stone-500">
+                  Indica si la fosa cuenta con permiso para obras de albañilería, remodelación o colocación de monumento.
+                </span>
+              </div>
             </div>
           </div>
 
@@ -509,8 +548,43 @@ export default function ModalRegistroFosa({
                 />
               </div>
 
+              {/* Parentesco del Titular con el Difunto */}
               <div className="space-y-1">
-                <label className="block font-bold text-stone-700">Fecha de defunción</label>
+                <label className="block font-bold text-stone-700">Parentesco con el Titular</label>
+                <select
+                  value={formData.difuntoParentesco}
+                  onChange={(e) => setFormData({ ...formData, difuntoParentesco: e.target.value })}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
+                >
+                  <option value="">Selecciona parentesco...</option>
+                  {OPCIONES_PARENTESCO.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Tipo de Servicio Funerario (Inhumación / Exhumación de restos / Reinhumación) */}
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Tipo de Servicio Funerario</label>
+                <select
+                  value={formData.difuntoTipoServicio}
+                  onChange={(e) => setFormData({ ...formData, difuntoTipoServicio: e.target.value })}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
+                >
+                  {TIPOS_SERVICIO_FUNERARIO.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">
+                  {formData.difuntoTipoServicio === 'Exhumación de restos'
+                    ? 'Fecha de exhumación'
+                    : formData.difuntoTipoServicio === 'Reinhumación'
+                    ? 'Fecha de reinhumación'
+                    : 'Fecha de defunción'}
+                </label>
                 <input
                   type="date"
                   value={formData.difuntoFechaInhumacion}
@@ -520,13 +594,36 @@ export default function ModalRegistroFosa({
               </div>
 
               <div className="space-y-1">
-                <label className="block font-bold text-stone-700">Causa de Muerte</label>
+                <label className="block font-bold text-stone-700">Causa de Muerte / Motivo</label>
                 <input
                   type="text"
                   placeholder="Ej: Natural / Infarto"
                   value={formData.difuntoCausaMuerte}
                   onChange={(e) => setFormData({ ...formData, difuntoCausaMuerte: e.target.value })}
                   className="w-full bg-white border border-cream-300 rounded-xl p-2.5 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Edad al fallecer</label>
+                <input
+                  type="number"
+                  placeholder="Ej: 65"
+                  value={formData.difuntoEdad}
+                  onChange={(e) => setFormData({ ...formData, difuntoEdad: e.target.value })}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">CURP (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="18 caracteres"
+                  value={formData.difuntoCurp}
+                  onChange={(e) => setFormData({ ...formData, difuntoCurp: e.target.value.toUpperCase() })}
+                  maxLength={18}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-mono text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 uppercase"
                 />
               </div>
             </div>

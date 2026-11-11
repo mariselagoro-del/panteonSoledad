@@ -69,6 +69,15 @@ export const DOCUMENTOS_REQUERIDOS = [
     descripcion: 'Autorización oficial para trabajos de albañilería, remodelación, losa o arreglo de fosa',
     obligatorio: false,
     icono: 'FileCheck'
+  },
+  {
+    id: 'permiso_exhumacion_reinhumacion',
+    categoria: 'permisos',
+    categoriaTitulo: 'Permisos Sanitarios y Legales',
+    titulo: 'Permiso de Exhumación / Reinhumación',
+    descripcion: 'Autorización oficial sanitaria y judicial para exhumación de restos o reinhumación',
+    obligatorio: false,
+    icono: 'FileCheck'
   }
 ];
 

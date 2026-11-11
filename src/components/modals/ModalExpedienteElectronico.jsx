@@ -516,7 +516,8 @@ export default function ModalExpedienteElectronico({
                 {difuntoActual ? difuntoActual.nombre : 'Sin difunto asignado (Espacio disponible)'}
               </div>
               <div className="text-[11px] text-stone-500">
-                {difuntoActual?.fechaInhumacion ? `Inhumación: ${difuntoActual.fechaInhumacion}` : 'Fecha de inhumación no especificada'}
+                {difuntoActual?.fechaInhumacion ? `${difuntoActual.tipoServicio || 'Inhumación'}: ${difuntoActual.fechaInhumacion}` : 'Fecha de servicio no especificada'}
+                {difuntoActual?.parentesco ? ` • Parentesco: ${difuntoActual.parentesco}` : ''}
                 {difuntoActual?.curp ? ` • CURP: ${difuntoActual.curp}` : ''}
               </div>
               {listaDifuntos.length > 1 && (

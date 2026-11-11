@@ -42,3 +42,27 @@ export const DISTRIBUCION_PLANO_INICIAL = [
 
 export const REGISTROS_FOSAS_INICIALES = datasetReal.espacios || [];
 export const MOVIMIENTOS_FINANCIEROS_INICIALES = datasetReal.movimientosFinancieros || [];
+
+export const OPCIONES_PARENTESCO = [
+  'Hijo(a)',
+  'Esposo(a) / Cónyuge',
+  'Padre / Madre',
+  'Hermano(a)',
+  'Abuelo(a)',
+  'Nieto(a)',
+  'Tío(a)',
+  'Sobrino(a)',
+  'Yerno / Nuera',
+  'Suegro(a)',
+  'Primo(a)',
+  'El mismo titular',
+  'Otro / Sin parentesco directo'
+];
+
+export const TIPOS_SERVICIO_FUNERARIO = [
+  'Inhumación',
+  'Exhumación de restos',
+  'Reinhumación',
+  'Depósito de cenizas'
+];
+

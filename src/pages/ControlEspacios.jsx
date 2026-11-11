@@ -396,6 +396,13 @@ export default function ControlEspacios({
                             Sellada: {item.fechaSellado}
                           </div>
                         )}
+                        {(item.permisoArregloTumba === 'Sí (Autorizado)' || item.permisoArregloTumba === 'Sí' || Boolean(item.expediente?.documentos?.permiso_arreglo_tumba)) && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-teal-100 text-teal-900 border border-teal-300">
+                              Permiso de Arreglo
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Titular */}
@@ -424,8 +431,15 @@ export default function ControlEspacios({
                                     Coincidencia
                                   </span>
                                 </div>
-                                <div className="text-[10px] text-stone-500 flex items-center gap-2 mt-0.5">
-                                  <span>Inhumación: {item._difuntoCoincidente.fechaInhumacion || item._difuntoCoincidente.fechaDefuncion || 'N/D'}</span>
+                                <div className="text-[10px] text-stone-500 flex items-center gap-1.5 flex-wrap mt-0.5">
+                                  <span className="font-medium">
+                                    {item._difuntoCoincidente.tipoServicio || 'Inhumación'}: {item._difuntoCoincidente.fechaInhumacion || item._difuntoCoincidente.fechaDefuncion || 'N/D'}
+                                  </span>
+                                  {item._difuntoCoincidente.parentesco && (
+                                    <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1 py-0.2 rounded border border-teal-200">
+                                      {item._difuntoCoincidente.parentesco}
+                                    </span>
+                                  )}
                                   {item.historialDifuntos.length > 1 && (
                                     <button
                                       type="button"
@@ -447,8 +461,15 @@ export default function ControlEspacios({
                                 <div className="font-semibold text-stone-900">
                                   {item.historialDifuntos[0].nombre}
                                 </div>
-                                <div className="text-[10px] text-stone-400 flex items-center gap-1.5 mt-0.5">
-                                  <span>Inhumación: {item.historialDifuntos[0].fechaInhumacion || item.historialDifuntos[0].fechaDefuncion || 'N/D'}</span>
+                                <div className="text-[10px] text-stone-500 flex items-center gap-1.5 flex-wrap mt-0.5">
+                                  <span className="font-medium">
+                                    {item.historialDifuntos[0].tipoServicio || 'Inhumación'}: {item.historialDifuntos[0].fechaInhumacion || item.historialDifuntos[0].fechaDefuncion || 'N/D'}
+                                  </span>
+                                  {item.historialDifuntos[0].parentesco && (
+                                    <span className="text-[9px] font-bold text-stone-700 bg-cream-100 px-1 py-0.2 rounded border border-cream-200">
+                                      {item.historialDifuntos[0].parentesco}
+                                    </span>
+                                  )}
                                   {item.historialDifuntos.length > 1 && (
                                     <button
                                       type="button"
@@ -747,6 +768,17 @@ export default function ControlEspacios({
                               <h3 className="font-black text-sm text-stone-900">
                                 {dif.nombre}
                               </h3>
+                              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                                dif.tipoServicio === 'Exhumación de restos' || (dif.causaMuerte || '').toLowerCase().includes('exhum')
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : dif.tipoServicio === 'Reinhumación'
+                                  ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                  : dif.tipoServicio === 'Depósito de cenizas'
+                                  ? 'bg-cyan-100 text-cyan-900 border-cyan-300'
+                                  : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                              }`}>
+                                {dif.tipoServicio || 'Inhumación'}
+                              </span>
                               {esCoincidente && (
                                 <span className="bg-teal-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                                   Búsqueda

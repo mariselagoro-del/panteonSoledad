@@ -1394,6 +1394,34 @@ export default function ModalHistorialPagos({
                     + Permiso de arreglo de tumba
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => setDialogYaPago({
+                      ...dialogYaPago,
+                      concepto: 'Exhumación de restos',
+                      monto: 3500,
+                      categoria: 'Servicio',
+                      marcarAlCorriente: false
+                    })}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 transition-colors cursor-pointer border border-orange-200"
+                  >
+                    + Exhumación de restos
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDialogYaPago({
+                      ...dialogYaPago,
+                      concepto: 'Reinhumación',
+                      monto: 2500,
+                      categoria: 'Servicio',
+                      marcarAlCorriente: false
+                    })}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 transition-colors cursor-pointer border border-indigo-200"
+                  >
+                    + Reinhumación
+                  </button>
+
                   {resumenFinanciero.adeudoEstimado > 0 && (
                     <button
                       type="button"

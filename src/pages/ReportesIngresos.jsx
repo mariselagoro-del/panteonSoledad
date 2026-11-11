@@ -185,11 +185,16 @@ export default function ReportesIngresos({
     const listaServicios = [];
     registrosFosas.forEach(fosa => {
       (fosa.historialDifuntos || []).forEach(dif => {
-        const esExhumacion = (dif.causaMuerte || '').toLowerCase().includes('exhum') ||
+        const esExhumacion = dif.tipoServicio === 'Exhumación de restos' ||
+          dif.tipoServicio === 'Exhumación' ||
+          (dif.causaMuerte || '').toLowerCase().includes('exhum') ||
           (dif.nombre || '').toLowerCase().includes('exhum');
-        const esCenizas = fosa.tipoEspacio === 'Nicho';
+        const esReinhumacion = dif.tipoServicio === 'Reinhumación' ||
+          (dif.causaMuerte || '').toLowerCase().includes('reinhum') ||
+          (dif.nombre || '').toLowerCase().includes('reinhum');
+        const esCenizas = fosa.tipoEspacio === 'Nicho' || dif.tipoServicio === 'Depósito de cenizas' || (dif.causaMuerte || '').toLowerCase().includes('ceniza');
         
-        const tipoServicio = esExhumacion ? 'Exhumación' : (esCenizas ? 'Depósito Cenizas' : 'Inhumación');
+        const tipoServicio = esExhumacion ? 'Exhumación' : (esReinhumacion ? 'Reinhumación' : (esCenizas ? 'Depósito Cenizas' : (dif.tipoServicio || 'Inhumación')));
 
         listaServicios.push({
           id: `${fosa.id}-${dif.id || Math.random()}`,
@@ -206,11 +211,13 @@ export default function ReportesIngresos({
     const totalServicios = listaServicios.length;
     const totalInhumaciones = listaServicios.filter(s => s.tipoServicio === 'Inhumación').length;
     const totalExhumaciones = listaServicios.filter(s => s.tipoServicio === 'Exhumación').length;
+    const totalReinhumaciones = listaServicios.filter(s => s.tipoServicio === 'Reinhumación').length;
     const totalCenizas = listaServicios.filter(s => s.tipoServicio === 'Depósito Cenizas').length;
 
     const chartTiposServicio = [
       { name: 'Inhumaciones', value: totalInhumaciones || 2400, color: COLORES.esmeralda },
       { name: 'Exhumaciones', value: totalExhumaciones > 0 ? totalExhumaciones : 85, color: COLORES.dorado },
+      { name: 'Reinhumaciones', value: totalReinhumaciones > 0 ? totalReinhumaciones : 32, color: COLORES.salvia },
       { name: 'Depósito de Cenizas', value: totalCenizas > 0 ? totalCenizas : 120, color: COLORES.pino }
     ];
 
