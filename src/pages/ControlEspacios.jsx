@@ -22,7 +22,7 @@ import {
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { calcularEstadoExpediente } from '../constants/expedienteConfig';
-import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa, formatearFecha } from '../utils/busquedaUtils';
 
 export default function ControlEspacios({
   secciones = [],
@@ -393,7 +393,7 @@ export default function ControlEspacios({
                         </div>
                         {item.tipoConstruccion === 'Sellada' && item.fechaSellado && (
                           <div className="text-[9px] text-amber-800 font-semibold mt-0.5">
-                            Sellada: {item.fechaSellado}
+                            Sellada: {formatearFecha(item.fechaSellado)}
                           </div>
                         )}
                         {(item.permisoArregloTumba === 'Sí (Autorizado)' || item.permisoArregloTumba === 'Sí' || Boolean(item.expediente?.documentos?.permiso_arreglo_tumba)) && (
@@ -433,7 +433,7 @@ export default function ControlEspacios({
                                 </div>
                                 <div className="text-[10px] text-stone-500 flex items-center gap-1.5 flex-wrap mt-0.5">
                                   <span className="font-medium">
-                                    {item._difuntoCoincidente.tipoServicio || 'Inhumación'}: {item._difuntoCoincidente.fechaInhumacion || item._difuntoCoincidente.fechaDefuncion || 'N/D'}
+                                    {item._difuntoCoincidente.tipoServicio || 'Inhumación'}: {formatearFecha(item._difuntoCoincidente.fechaInhumacion || item._difuntoCoincidente.fechaDefuncion, 'N/D')}
                                   </span>
                                   {item._difuntoCoincidente.parentesco && (
                                     <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1 py-0.2 rounded border border-teal-200">
@@ -463,7 +463,7 @@ export default function ControlEspacios({
                                 </div>
                                 <div className="text-[10px] text-stone-500 flex items-center gap-1.5 flex-wrap mt-0.5">
                                   <span className="font-medium">
-                                    {item.historialDifuntos[0].tipoServicio || 'Inhumación'}: {item.historialDifuntos[0].fechaInhumacion || item.historialDifuntos[0].fechaDefuncion || 'N/D'}
+                                    {item.historialDifuntos[0].tipoServicio || 'Inhumación'}: {formatearFecha(item.historialDifuntos[0].fechaInhumacion || item.historialDifuntos[0].fechaDefuncion, 'N/D')}
                                   </span>
                                   {item.historialDifuntos[0].parentesco && (
                                     <span className="text-[9px] font-bold text-stone-700 bg-cream-100 px-1 py-0.2 rounded border border-cream-200">
@@ -796,7 +796,7 @@ export default function ControlEspacios({
                         <div className="text-right shrink-0">
                           <span className="text-[10px] text-stone-400 font-medium block">Fecha de Servicio:</span>
                           <span className="font-bold text-xs text-stone-800">
-                            {dif.fechaInhumacion || dif.fechaDefuncion || 'Sin fecha'}
+                            {formatearFecha(dif.fechaInhumacion || dif.fechaDefuncion)}
                           </span>
                         </div>
                       </div>

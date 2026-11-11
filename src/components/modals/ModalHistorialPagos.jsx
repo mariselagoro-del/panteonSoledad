@@ -22,7 +22,7 @@ import {
   CUOTA_MTTO_ANUAL,
   CUOTA_FAENA_ANUAL
 } from '../../utils/pagosUtils';
-import { formatearNumeroFosa } from '../../utils/busquedaUtils';
+import { formatearNumeroFosa, formatearFecha } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
 export default function ModalHistorialPagos({
@@ -954,7 +954,7 @@ export default function ModalHistorialPagos({
                           {/* Fecha / Periodo */}
                           <td className="py-3 px-4">
                             <div className="font-bold text-stone-900">
-                              {esAdeudo ? `Ejercicio Fiscal ${item.anio}` : item.fecha}
+                              {esAdeudo ? `Ejercicio Fiscal ${item.anio}` : formatearFecha(item.fecha)}
                             </div>
                             {item.anio && (
                               <div className={`text-[10px] font-mono px-1.5 py-0.2 rounded w-fit mt-0.5 font-bold ${

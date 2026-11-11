@@ -21,7 +21,7 @@ import {
 import { calcularEstadoExpediente, leerArchivoParaExpediente } from '../../constants/expedienteConfig';
 import { OPCIONES_PARENTESCO, TIPOS_SERVICIO_FUNERARIO } from '../../constants/panteonData';
 import { obtenerHistorialPagosFosa } from '../../utils/pagosUtils';
-import { formatearNumeroFosa } from '../../utils/busquedaUtils';
+import { formatearNumeroFosa, formatearFecha } from '../../utils/busquedaUtils';
 import { panteonService } from '../../services/panteonService';
 import ModalAlerta from '../common/ModalAlerta';
 
@@ -647,7 +647,7 @@ export default function ModalEditarFosa({
                       </div>
 
                       <div className="text-[10px] text-stone-500 flex items-center gap-2 flex-wrap">
-                        <span>Fecha: {dif.fechaInhumacion || dif.fechaDefuncion || 'N/D'}</span>
+                        <span>Fecha: {formatearFecha(dif.fechaInhumacion || dif.fechaDefuncion, 'N/D')}</span>
                         {dif.causaMuerte && <span>• Causa: {dif.causaMuerte}</span>}
                         {dif.curp && <span>• CURP: {dif.curp}</span>}
                       </div>

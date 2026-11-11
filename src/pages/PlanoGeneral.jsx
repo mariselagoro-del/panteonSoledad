@@ -26,7 +26,7 @@ import {
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { obtenerHistorialPagosFosa } from '../utils/pagosUtils';
-import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../utils/busquedaUtils';
+import { coincideEspacioConBusqueda, formatearNumeroFosa, formatearFecha } from '../utils/busquedaUtils';
 
 export default function PlanoGeneral({
   registrosFosas = [],
@@ -555,7 +555,7 @@ export default function PlanoGeneral({
                         <div key={idx} className="p-2 bg-cream-50 rounded-xl border border-cream-200 space-y-0.5">
                           <p className="font-bold text-stone-900 truncate">{dif.nombre}</p>
                           <p className="text-[10px] text-stone-500">
-                            {dif.fechaInhumacion ? `Fecha: ${dif.fechaInhumacion}` : 'Sin fecha'}
+                            {dif.fechaInhumacion ? `Fecha: ${formatearFecha(dif.fechaInhumacion)}` : 'Sin fecha'}
                           </p>
                         </div>
                       ))}
@@ -607,7 +607,7 @@ export default function PlanoGeneral({
                         <div className="flex justify-between items-center text-[10px]">
                           <span className="text-stone-500">Último Pago:</span>
                           <span className="font-bold text-teal-800 truncate max-w-[130px]" title={finanzas.ultimoPago?.concepto}>
-                            {finanzas.ultimoPago ? `${finanzas.ultimoPago.fecha}` : 'Sin registros'}
+                            {finanzas.ultimoPago ? formatearFecha(finanzas.ultimoPago.fecha) : 'Sin registros'}
                           </span>
                         </div>
 

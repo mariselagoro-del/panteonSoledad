@@ -11,6 +11,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import ModalAlerta from '../components/common/ModalAlerta';
+import { formatearFecha } from '../utils/busquedaUtils';
 
 export default function FinanzasCaja({
   movimientos = [],
@@ -268,7 +269,7 @@ export default function FinanzasCaja({
                     <tr key={idx} className="hover:bg-cream-50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-mono font-bold text-stone-900">{item.folio || item.folio_comprobante || 'REC-2026'}</div>
-                        <div className="text-[10px] text-stone-400">{item.fecha || item.fecha_movimiento}</div>
+                        <div className="text-[10px] text-stone-500 font-medium">{formatearFecha(item.fecha || item.fecha_movimiento)}</div>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${

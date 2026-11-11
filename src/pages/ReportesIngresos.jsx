@@ -27,7 +27,7 @@ import {
   TrendingUp,
   PieChart as PieChartIcon
 } from 'lucide-react';
-import { coincideTexto, formatearNumeroFosa } from '../utils/busquedaUtils';
+import { coincideTexto, formatearNumeroFosa, formatearFecha } from '../utils/busquedaUtils';
 
 // Paleta oficial de colores para gráficas (Panteón La Soledad)
 const COLORES = {
@@ -847,7 +847,7 @@ export default function ReportesIngresos({
                       })
                       .map((mov, idx) => (
                         <tr key={`mov-${idx}`} className="hover:bg-cream-50">
-                          <td className="py-2.5 px-4 font-mono text-stone-600">{mov.fecha}</td>
+                          <td className="py-2.5 px-4 font-mono text-stone-600">{formatearFecha(mov.fecha)}</td>
                           <td className="py-2.5 px-3 font-mono font-bold text-stone-900">{mov.folio}</td>
                           <td className="py-2.5 px-4 font-bold text-stone-800">{mov.concepto}</td>
                           <td className="py-2.5 px-3 text-stone-600">{mov.metodoPago || 'Efectivo'}</td>
@@ -1022,7 +1022,7 @@ export default function ReportesIngresos({
                       .slice(0, 35)
                       .map((srv, idx) => (
                         <tr key={`srv-row-${idx}`} className="hover:bg-cream-50">
-                          <td className="py-2.5 px-4 font-mono text-stone-600">{srv.fechaServicio}</td>
+                          <td className="py-2.5 px-4 font-mono text-stone-600">{formatearFecha(srv.fechaServicio)}</td>
                           <td className="py-2.5 px-4 font-bold text-stone-900">{srv.difuntoNombre}</td>
                           <td className="py-2.5 px-3 text-center">
                             <span className="font-mono font-bold px-2 py-0.5 bg-cream-200 text-stone-900 rounded">

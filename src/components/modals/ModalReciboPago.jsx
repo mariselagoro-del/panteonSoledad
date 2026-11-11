@@ -45,7 +45,8 @@ function ReciboFisico({
   telefonoContacto,
   tipoCopia = 'ORIGINAL'
 }) {
-  const [anio, mes, dia] = (fechaPago || new Date().toISOString().split('T')[0]).split('-');
+  const fechaLimpia = fechaPago ? String(fechaPago).split('T')[0] : new Date().toISOString().split('T')[0];
+  const [anio, mes, dia] = fechaLimpia.split('-');
   const montoNumerico = Number(monto) || 0;
   const montoFormateado = montoNumerico.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

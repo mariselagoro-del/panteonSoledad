@@ -154,3 +154,44 @@ export function formatearNumeroFosa(codigo) {
   return sinPrefijo || str;
 }
 
+/**
+ * Formatea una fecha ISO o string (ej: '2026-11-05T00:00:00.000Z' o '2026-11-05')
+ * a formato legible 'DD/MM/AAAA' (ej: '05/11/2026').
+ * Evita desfasajes de zona horaria extrayendo directamente la porción de fecha.
+ */
+export function formatearFecha(fecha, fallback = 'Sin fecha') {
+  if (!fecha) return fallback;
+  const str = String(fecha).trim();
+  if (!str) return fallback;
+
+  // Si ya viene formateada como DD/MM/AAAA
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+    return str;
+  }
+
+  // Extraer sólo la fecha previa a 'T' o espacio
+  const soloFecha = str.split('T')[0].split(' ')[0];
+  const partes = soloFecha.split('-');
+  if (partes.length === 3 && partes[0].length === 4) {
+    const [y, m, d] = partes;
+    return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+  }
+
+  try {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      if (str.includes('T') && str.endsWith('Z')) {
+        const dia = String(d.getUTCDate()).padStart(2, '0');
+        const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const anio = d.getUTCFullYear();
+        return `${dia}/${mes}/${anio}`;
+      }
+      return d.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+  } catch {
+    // Si falla, devolver la porción limpia
+  }
+
+  return soloFecha || str || fallback;
+}
+

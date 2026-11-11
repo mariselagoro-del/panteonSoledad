@@ -31,7 +31,7 @@ import {
   calcularEstadoExpediente, 
   leerArchivoParaExpediente 
 } from '../../constants/expedienteConfig';
-import { formatearNumeroFosa } from '../../utils/busquedaUtils';
+import { formatearNumeroFosa, formatearFecha } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 import { panteonService } from '../../services/panteonService';
 
@@ -516,7 +516,7 @@ export default function ModalExpedienteElectronico({
                 {difuntoActual ? difuntoActual.nombre : 'Sin difunto asignado (Espacio disponible)'}
               </div>
               <div className="text-[11px] text-stone-500">
-                {difuntoActual?.fechaInhumacion ? `${difuntoActual.tipoServicio || 'Inhumación'}: ${difuntoActual.fechaInhumacion}` : 'Fecha de servicio no especificada'}
+                {difuntoActual?.fechaInhumacion ? `${difuntoActual.tipoServicio || 'Inhumación'}: ${formatearFecha(difuntoActual.fechaInhumacion)}` : 'Fecha de servicio no especificada'}
                 {difuntoActual?.parentesco ? ` • Parentesco: ${difuntoActual.parentesco}` : ''}
                 {difuntoActual?.curp ? ` • CURP: ${difuntoActual.curp}` : ''}
               </div>

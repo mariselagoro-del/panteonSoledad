@@ -262,7 +262,7 @@ export default function Dashboard({
           const primer = r.historialDifuntos[0];
           return {
             id: r.id || i,
-            fecha: primer?.fechaInhumacion ? new Date(primer.fechaInhumacion).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '20 Oct',
+            fecha: primer?.fechaInhumacion ? new Date(primer.fechaInhumacion.split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '20 Oct',
             nombre: primer?.nombre || r.titularNombre || 'Registro',
             tipo: r.tipoEspacio === 'Nicho' ? 'Cenizas' : 'Inhumación',
             seccion: r.seccionNombre || 'Sec. A'
@@ -286,7 +286,7 @@ export default function Dashboard({
       if (ingresos.length >= 3) {
         return ingresos.slice(0, 5).map((m, i) => ({
           id: m.id || i,
-          fecha: m.fecha ? new Date(m.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '20 Oct',
+          fecha: m.fecha ? new Date(m.fecha.split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '20 Oct',
           concepto: m.concepto || m.categoria || 'Servicio funerario',
           monto: Number(m.monto || 0),
           estado: 'Pagado'

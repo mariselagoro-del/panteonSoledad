@@ -1,7 +1,7 @@
 // src/components/modals/ModalCedulaTitulo.jsx
 import { Printer, X, Award } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
-import { formatearNumeroFosa } from '../../utils/busquedaUtils';
+import { formatearNumeroFosa, formatearFecha } from '../../utils/busquedaUtils';
 
 export default function ModalCedulaTitulo({ espacio, onCerrar }) {
   if (!espacio) return null;
@@ -163,7 +163,7 @@ export default function ModalCedulaTitulo({ espacio, onCerrar }) {
                         )}
                         {(dif.fechaInhumacion || dif.fechaDefuncion) && (
                           <span className="text-[10px] text-stone-500 ml-1.5 font-mono">
-                            ({dif.tipoServicio ? `${dif.tipoServicio}: ` : ''}{dif.fechaInhumacion || dif.fechaDefuncion})
+                            ({dif.tipoServicio ? `${dif.tipoServicio}: ` : ''}{formatearFecha(dif.fechaInhumacion || dif.fechaDefuncion)})
                           </span>
                         )}
                       </div>
