@@ -20,9 +20,9 @@ import {
 import { coincideEspacioConBusqueda, formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 const CONCEPTOS_PREDEFINIDOS = [
-  { label: `Mantenimiento ($${CUOTA_MTTO_ANUAL.toFixed(2)} MXN)`, concepto: 'Mantenimiento', monto: CUOTA_MTTO_ANUAL, categoria: 'MTTO' },
-  { label: `Faena ($${CUOTA_FAENA_ANUAL.toFixed(2)} MXN)`, concepto: 'Faena', monto: CUOTA_FAENA_ANUAL, categoria: 'Faena' },
-  { label: `Mantenimiento y Faena ($${(CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL).toFixed(2)} MXN)`, concepto: 'Mantenimiento y Faena', monto: CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL, categoria: 'MTTO + Faena' },
+  { label: 'Mantenimiento', concepto: 'Mantenimiento', monto: CUOTA_MTTO_ANUAL, categoria: 'MTTO' },
+  { label: 'Faena', concepto: 'Faena', monto: CUOTA_FAENA_ANUAL, categoria: 'Faena' },
+  { label: 'Mantenimiento y Faena', concepto: 'Mantenimiento y Faena', monto: CUOTA_MTTO_ANUAL + CUOTA_FAENA_ANUAL, categoria: 'MTTO + Faena' },
   { label: 'Cambio de titular', concepto: 'Cambio de titular', monto: 500.0, categoria: 'Cambio de titular' },
   { label: 'Titularidad', concepto: 'Titularidad', monto: 500.0, categoria: 'Titularidad' },
   { label: 'Depósito de cenizas', concepto: 'Depósito de cenizas', monto: 800.0, categoria: 'Depósito de cenizas' },
@@ -634,21 +634,16 @@ export default function ModalReciboPago({
                           setConceptoSeleccionado(c.concepto);
                           setMonto(c.monto !== '' ? String(c.monto) : '');
                         }}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex flex-col justify-between ${
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex items-center justify-between min-h-[44px] ${
                           seleccionado
                             ? 'bg-teal-700 text-white border-teal-800 shadow-xs ring-2 ring-teal-500/30'
                             : 'bg-white text-stone-700 border-cream-300 hover:bg-cream-100'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-[11px] block font-black truncate">{c.concepto}</span>
-                          {seleccionado && (
-                            <CheckCircle2 className="w-3.5 h-3.5 text-teal-200 shrink-0 ml-1" />
-                          )}
-                        </div>
-                        <span className={`text-[10px] font-mono font-bold mt-1.5 ${seleccionado ? 'text-teal-100' : 'text-stone-500'}`}>
-                          {c.monto !== '' ? `$${Number(c.monto).toFixed(2)} MXN` : 'Monto libre'}
-                        </span>
+                        <span className="text-[11px] block font-black truncate">{c.concepto}</span>
+                        {seleccionado && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-teal-200 shrink-0 ml-1.5" />
+                        )}
                       </button>
                     );
                   })}

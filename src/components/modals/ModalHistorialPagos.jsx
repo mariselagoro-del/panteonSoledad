@@ -1293,7 +1293,7 @@ export default function ModalHistorialPagos({
                     })}
                     className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer border border-emerald-200"
                   >
-                    + Mantenimiento ($250)
+                    + Mantenimiento
                   </button>
 
                   <button
@@ -1307,7 +1307,7 @@ export default function ModalHistorialPagos({
                     })}
                     className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors cursor-pointer border border-amber-200"
                   >
-                    + Faena ($250)
+                    + Faena
                   </button>
 
                   <button
@@ -1321,7 +1321,7 @@ export default function ModalHistorialPagos({
                     })}
                     className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer border border-teal-200 font-black"
                   >
-                    + Mantenimiento y Faena ($500)
+                    + Mantenimiento y Faena
                   </button>
 
                   <button
