@@ -34,8 +34,43 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
       const usuarioLimpio = usuario.trim().toLowerCase();
       const passLimpia = contrasena.trim();
 
-      // 1. Usuario Administrador (Acceso total incluyendo contabilidad)
-      if (
+      // 1. Usuario Corina Michel Aceves León (Administradora General con acceso total al sistema)
+      const esUsuarioCorina = [
+        'corina',
+        'corina michel',
+        'corina aceves',
+        'corina.aceves',
+        'corinaaceves',
+        'corinaleon',
+        'caceves',
+        'corina michel aceves leon',
+        'corina michel aceves león'
+      ].includes(usuarioLimpio);
+
+      const contrasenasValidasCorina = [
+        'corina',
+        'corina123',
+        'corina2026',
+        'admin',
+        'admin123',
+        'panteon',
+        'soledad',
+        '1234',
+        '123456'
+      ];
+
+      if (esUsuarioCorina && contrasenasValidasCorina.includes(passLimpia.toLowerCase())) {
+        onLogin({
+          nombre: 'Corina Michel Aceves León',
+          usuario: usuarioLimpio,
+          rol: 'admin',
+          rolEtiqueta: 'Administradora General',
+          permisos: { contabilidad: true, registrarPagos: true, catastro: true },
+          recordar: recordarSesion
+        });
+      }
+      // 2. Usuario Administrador General
+      else if (
         (usuarioLimpio === 'admin' && (passLimpia === 'admin' || passLimpia === 'panteon' || passLimpia === 'soledad' || passLimpia === 'admin123')) ||
         (usuarioLimpio === 'administrador' && (passLimpia === 'admin' || passLimpia === 'panteon'))
       ) {
@@ -48,7 +83,7 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
           recordar: recordarSesion
         });
       } 
-      // 2. Nuevo Usuario Operador (Acceso completo a todo el sistema EXCEPTO contabilidad, pero SI puede registrar pagos)
+      // 3. Nuevo Usuario Operador (Acceso completo a todo el sistema EXCEPTO contabilidad, pero SI puede registrar pagos)
       else if (
         (usuarioLimpio === 'operador' && (passLimpia === 'operador' || passLimpia === 'panteon' || passLimpia === '1234' || passLimpia === 'soledad')) ||
         (usuarioLimpio === 'auxiliar' && (passLimpia === 'auxiliar' || passLimpia === 'panteon' || passLimpia === '1234')) ||
