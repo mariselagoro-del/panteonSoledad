@@ -297,7 +297,7 @@ export default function Header({
         {onCerrarSesion && (
           <button
             type="button"
-            onClick={onCerrarSesion}
+            onClick={() => onCerrarSesion?.()}
             className="p-2 rounded-xl text-stone-600 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer border border-stone-200/90 bg-white shadow-2xs"
             title="Cerrar sesión"
           >

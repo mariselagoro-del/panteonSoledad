@@ -103,7 +103,7 @@ export default function Login({ onLogin, mensajeInactividad = null }) {
           </div>
 
           {/* Mensaje de sesión cerrada por inactividad */}
-          {mensajeInactividad && !error && (
+          {mensajeInactividad && typeof mensajeInactividad === 'string' && !error && (
             <div className="p-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-semibold flex items-center gap-2 animate-in fade-in">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <span>{mensajeInactividad}</span>

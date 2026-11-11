@@ -151,6 +151,9 @@ export default function App() {
 
   // Handlers de Autenticación
   const handleLogout = useCallback((motivo = null) => {
+    // Si se pasa un evento (ej. MouseEvent de onClick) en lugar de un string, lo descartamos
+    const motivoTexto = typeof motivo === 'string' && motivo.trim().length > 0 ? motivo.trim() : null;
+
     setUsuarioAutenticado(null);
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_KEY);
@@ -162,8 +165,14 @@ export default function App() {
     setFosaHistorialModal(null);
     setExpedienteModal({ abierto: false, espacio: null, modoInicial: 'expediente' });
     setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null });
-    if (motivo) {
-      setMotivoLogout(motivo);
+    setMenuMobileAbierto(false);
+    setBusquedaGlobal('');
+    setPestanaActiva('dashboard');
+    setMotivoLogout(motivoTexto);
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    } catch {
+      // Ignorar en entornos que no soporten scrollTo
     }
   }, []);
 
@@ -442,6 +451,7 @@ export default function App() {
         mobileAbierto={menuMobileAbierto}
         onCerrarMobile={() => setMenuMobileAbierto(false)}
         esAdmin={esAdmin}
+        onCerrarSesion={() => handleLogout()}
       />
 
       {/* Contenedor Principal (Header + Vistas de Contenido) */}
@@ -462,7 +472,7 @@ export default function App() {
           usuarioActual={usuarioAutenticado}
           esAdmin={esAdmin}
           puedeRegistrarPagos={puedeRegistrarPagos}
-          onCerrarSesion={handleLogout}
+          onCerrarSesion={() => handleLogout()}
           onToggleMobileMenu={() => setMenuMobileAbierto(prev => !prev)}
         />
 

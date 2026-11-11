@@ -8,7 +8,8 @@ import {
   Map, 
   ChevronRight, 
   X,
-  Sprout
+  Sprout,
+  LogOut
 } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
 
@@ -19,7 +20,8 @@ export default function Sidebar({
   onToggleColapsar,
   mobileAbierto = false,
   onCerrarMobile,
-  esAdmin = true
+  esAdmin = true,
+  onCerrarSesion
 }) {
   const menuItems = [
     {
@@ -171,6 +173,28 @@ export default function Sidebar({
             );
           })}
         </nav>
+
+        {/* Botón de Cerrar Sesión en Sidebar */}
+        {onCerrarSesion && (
+          <div className="px-3 py-2 border-t border-[#1f3a31]">
+            <button
+              type="button"
+              onClick={() => {
+                if (onCerrarMobile) onCerrarMobile();
+                onCerrarSesion?.();
+              }}
+              className={`w-full flex items-center ${
+                menuColapsado && !mobileAbierto ? 'justify-center' : 'justify-start'
+              } gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-red-300 hover:text-white hover:bg-red-950/40 transition-all cursor-pointer`}
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4 text-red-400 shrink-0" />
+              {(!menuColapsado || mobileAbierto) && (
+                <span className="truncate text-[13px]">Cerrar Sesión</span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 3. Pie del Sidebar: Ilustración Botánica y Frase "Dignidad en cada recuerdo" */}
