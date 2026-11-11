@@ -1380,6 +1380,20 @@ export default function ModalHistorialPagos({
                     + Cooperación voluntaria
                   </button>
 
+                  <button
+                    type="button"
+                    onClick={() => setDialogYaPago({
+                      ...dialogYaPago,
+                      concepto: 'Permiso de arreglo de tumba',
+                      monto: '',
+                      categoria: 'Construcción',
+                      marcarAlCorriente: false
+                    })}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors cursor-pointer border border-amber-200"
+                  >
+                    + Permiso de arreglo de tumba
+                  </button>
+
                   {resumenFinanciero.adeudoEstimado > 0 && (
                     <button
                       type="button"

@@ -14,11 +14,14 @@ import {
   CheckCircle2,
   AlertCircle,
   History,
-  Layers
+  Layers,
+  UploadCloud,
+  FileCheck
 } from 'lucide-react';
-import { calcularEstadoExpediente } from '../../constants/expedienteConfig';
+import { calcularEstadoExpediente, leerArchivoParaExpediente } from '../../constants/expedienteConfig';
 import { obtenerHistorialPagosFosa } from '../../utils/pagosUtils';
 import { formatearNumeroFosa } from '../../utils/busquedaUtils';
+import { panteonService } from '../../services/panteonService';
 import ModalAlerta from '../common/ModalAlerta';
 
 export default function ModalEditarFosa({
@@ -59,6 +62,85 @@ export default function ModalEditarFosa({
   });
 
   const [mostrarFormDifunto, setMostrarFormDifunto] = useState(false);
+  const [subiendoPermiso, setSubiendoPermiso] = useState(false);
+  const [permisoAdjunto, setPermisoAdjunto] = useState(() => {
+    const docs = itemActual?.expediente?.documentos || itemActual?.expediente || {};
+    return docs.permiso_arreglo_tumba || null;
+  });
+
+  useEffect(() => {
+    let activo = true;
+    async function cargarPermiso() {
+      if (itemActual?.codigo) {
+        try {
+          const adjuntos = await panteonService.obtenerAdjuntos(itemActual.codigo);
+          if (activo && Array.isArray(adjuntos)) {
+            const perm = adjuntos.find(a => (a.docId || a.id) === 'permiso_arreglo_tumba');
+            if (perm) setPermisoAdjunto(perm);
+          }
+        } catch {
+          // Fallback silencioso si no hay conexión o datos
+        }
+      }
+    }
+    cargarPermiso();
+    return () => { activo = false; };
+  }, [itemActual]);
+
+  const handleSubirPermiso = async (e) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo || !itemActual?.codigo) return;
+    setSubiendoPermiso(true);
+
+    try {
+      const datosArchivo = await leerArchivoParaExpediente(archivo);
+      const objetoArchivo = {
+        id: 'permiso_arreglo_tumba',
+        docId: 'permiso_arreglo_tumba',
+        adjuntado: true,
+        codigo: itemActual.codigo,
+        titularNombre: itemActual.titularNombre || 'Sin titular registrado',
+        difuntoNombre: itemActual.historialDifuntos?.[0]?.nombre || 'Sin difunto registrado',
+        titulo: 'Permiso de Arreglo de Tumba',
+        categoria: 'permisos',
+        ...datosArchivo
+      };
+
+      await panteonService.guardarAdjunto(itemActual.codigo, 'permiso_arreglo_tumba', objetoArchivo);
+
+      const docsActuales = itemActual.expediente?.documentos || itemActual.expediente || {};
+      const nuevosDocs = {
+        ...docsActuales,
+        permiso_arreglo_tumba: objetoArchivo
+      };
+
+      await panteonService.guardarExpediente(itemActual.codigo, {
+        documentos: nuevosDocs,
+        ultimaActualizacion: new Date().toISOString()
+      });
+
+      setPermisoAdjunto(objetoArchivo);
+
+      setAlertaConfig({
+        tipo: 'exito',
+        titulo: 'Permiso Adjuntado',
+        mensaje: `El archivo "${archivo.name}" se guardó como Permiso de Arreglo de Tumba en el expediente del lote ${itemActual.codigo}.`,
+        textoBotonPrincipal: 'Aceptar',
+        onAceptar: () => setAlertaConfig(null)
+      });
+    } catch (err) {
+      console.error('Error al subir permiso:', err);
+      setAlertaConfig({
+        tipo: 'error',
+        titulo: 'Error al Adjuntar',
+        mensaje: 'No se pudo procesar el archivo del permiso. Intenta con un archivo PDF o imagen válido.',
+        textoBotonPrincipal: 'Entendido',
+        onAceptar: () => setAlertaConfig(null)
+      });
+    } finally {
+      setSubiendoPermiso(false);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -298,6 +380,54 @@ export default function ModalEditarFosa({
                   <span>Tumba estándar en tierra (sin sellar).</span>
                 </div>
               )}
+            </div>
+
+            {/* Permiso de Arreglo de Tumba */}
+            <div className="pt-3 border-t border-cream-200 mt-2 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800">
+                  <FileCheck className="w-4 h-4 text-teal-700" />
+                  <span>Permiso de Arreglo de Tumba</span>
+                </div>
+                {permisoAdjunto ? (
+                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    Permiso Adjunto
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-stone-400 font-medium">
+                    Sin permiso adjunto
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Autorización para obras de albañilería, remodelación, losa o arreglo general de la fosa.
+              </p>
+
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <label className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>{subiendoPermiso ? 'Cargando...' : permisoAdjunto ? 'Reemplazar Permiso' : 'Adjuntar Permiso'}</span>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    disabled={subiendoPermiso}
+                    onChange={handleSubirPermiso}
+                  />
+                </label>
+
+                {permisoAdjunto && onAbrirExpediente && (
+                  <button
+                    type="button"
+                    onClick={() => onAbrirExpediente(itemActual, 'visor')}
+                    className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Ver Permiso</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

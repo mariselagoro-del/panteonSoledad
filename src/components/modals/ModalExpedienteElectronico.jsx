@@ -852,7 +852,7 @@ export default function ModalExpedienteElectronico({
                       : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
                   }`}
                 >
-                  Difunto (4)
+                  Difunto ({DOCUMENTOS_REQUERIDOS.filter(d => d.categoria === 'difunto').length})
                 </button>
 
                 <button
@@ -864,7 +864,19 @@ export default function ModalExpedienteElectronico({
                       : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
                   }`}
                 >
-                  Titular (2)
+                  Titular ({DOCUMENTOS_REQUERIDOS.filter(d => d.categoria === 'titular').length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFiltroCategoria('permisos')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                    filtroCategoria === 'permisos'
+                      ? 'bg-teal-600 text-white shadow-2xs'
+                      : 'bg-cream-100 text-stone-600 hover:bg-cream-200'
+                  }`}
+                >
+                  Permisos ({DOCUMENTOS_REQUERIDOS.filter(d => d.categoria === 'permisos').length})
                 </button>
               </div>
 

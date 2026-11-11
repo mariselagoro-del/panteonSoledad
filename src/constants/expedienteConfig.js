@@ -58,6 +58,17 @@ export const DOCUMENTOS_REQUERIDOS = [
     descripcion: 'Acta de nacimiento del titular para acreditar personalidad y parentesco',
     obligatorio: true,
     icono: 'FileText'
+  },
+
+  // Permisos y Arreglos de Tumba
+  {
+    id: 'permiso_arreglo_tumba',
+    categoria: 'permisos',
+    categoriaTitulo: 'Permisos de Construcción y Mantenimiento',
+    titulo: 'Permiso de Arreglo de Tumba',
+    descripcion: 'Autorización oficial para trabajos de albañilería, remodelación, losa o arreglo de fosa',
+    obligatorio: false,
+    icono: 'FileCheck'
   }
 ];
 
@@ -91,7 +102,7 @@ export function esArchivoAdjuntoValido(val) {
  * @returns {Object} { totalRequeridos, totalAdjuntados, porcentaje, estatus, colorEstatus }
  */
 export function calcularEstadoExpediente(expediente) {
-  const totalRequeridos = DOCUMENTOS_REQUERIDOS.length; // 6
+  const totalRequeridos = DOCUMENTOS_REQUERIDOS.filter(doc => doc.obligatorio !== false).length; // 6 obligatorios normativos
 
   if (!expediente || typeof expediente !== 'object') {
     return {

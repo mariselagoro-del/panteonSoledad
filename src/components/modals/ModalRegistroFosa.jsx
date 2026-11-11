@@ -562,7 +562,7 @@ export default function ModalRegistroFosa({
             {mostrarSeccionDocs && (
               <div className="space-y-3 pt-2">
                 <p className="text-[11px] text-stone-600">
-                  Puedes anexar fotos o archivos PDF de los documentos solicitados por el área de administración (Acta de defunción, certificado médico, acta de nacimiento e INE del difunto y del titular):
+                  Puedes anexar fotos o archivos PDF de los documentos solicitados por el área de administración (Acta de defunción, certificado médico, acta de nacimiento, INE y permiso de arreglo de tumba):
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
