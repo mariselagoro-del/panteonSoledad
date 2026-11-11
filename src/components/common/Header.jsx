@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Search, 
   Calendar, 
-  Bell, 
   X, 
   Archive, 
   Sprout, 
@@ -277,21 +276,6 @@ export default function Header({
           <span className="hidden sm:inline capitalize">{fechaCapitalizada}</span>
           <span className="sm:hidden">{new Date().toLocaleDateString('es-MX')}</span>
         </div>
-
-        {/* Notificaciones de Adeudo (Solo Administrador) */}
-        {esAdmin && totalConAdeudo > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              if (onNavegarAPadron) onNavegarAPadron('Con Adeudo');
-            }}
-            className="relative p-2 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer border border-stone-200/80 bg-white"
-            title={`${totalConAdeudo} cuentas con refrendo pendiente`}
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
-          </button>
-        )}
 
         {/* Botón de Apagar / Cerrar Sesión */}
         {onCerrarSesion && (
