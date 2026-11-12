@@ -104,7 +104,7 @@ export default function Header({
   const fechaCapitalizada = fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1);
 
   return (
-    <header className="bg-white/95 backdrop-blur-xs border-b border-[#EBE6DD] px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-2xs">
+    <header className="bg-white/95 backdrop-blur-xs border-b border-[#EBE6DD] px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-2xs print:hidden">
       
       {/* 1. Saludo de Bienvenida y Botón Menú Mobile */}
       <div className="flex items-center gap-3">

@@ -911,8 +911,13 @@ export default function PlanoGeneral({
       {/* Modal de Título de Propiedad */}
       {cedulaAImprimir && (
         <ModalCedulaTitulo
+          key={cedulaAImprimir.id || cedulaAImprimir.codigo}
           espacio={cedulaAImprimir}
           onCerrar={() => setCedulaAImprimir(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setCedulaAImprimir(fosaActualizada);
+            if (onActualizarFosa) onActualizarFosa(fosaActualizada);
+          }}
         />
       )}
 

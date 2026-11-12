@@ -9,7 +9,8 @@ import {
   ChevronRight, 
   X,
   Sprout,
-  LogOut
+  LogOut,
+  Award
 } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
 
@@ -49,6 +50,12 @@ export default function Sidebar({
       hasChevron: true
     },
     {
+      id: 'cedula',
+      label: 'Cédula Oficial',
+      icon: Award,
+      hasChevron: true
+    },
+    {
       id: 'finanzas',
       label: 'Pagos',
       icon: CircleDollarSign,
@@ -83,7 +90,7 @@ export default function Sidebar({
         mobileAbierto ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       } ${
         menuColapsado ? 'md:w-20' : 'md:w-64'
-      } w-72 h-full bg-[#152822] text-white shadow-2xl md:shadow-xl select-none flex flex-col justify-between border-r border-[#1e3830] shrink-0`}
+      } w-72 h-full bg-[#152822] text-white shadow-2xl md:shadow-xl select-none flex flex-col justify-between border-r border-[#1e3830] shrink-0 print:hidden`}
     >
       
       {/* 1. Cabecera con Logotipo Oficial e Identidad Institucional */}

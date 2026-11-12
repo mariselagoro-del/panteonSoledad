@@ -612,8 +612,13 @@ export default function ControlEspacios({
       {/* Modal de Cédula de Título Oficial */}
       {espacioImprimir && (
         <ModalCedulaTitulo
+          key={espacioImprimir.id || espacioImprimir.codigo}
           espacio={espacioImprimir}
           onCerrar={() => setEspacioImprimir(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setEspacioImprimir(fosaActualizada);
+            if (onActualizarFosa) onActualizarFosa(fosaActualizada);
+          }}
         />
       )}
 

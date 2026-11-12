@@ -16,12 +16,14 @@ import ModalEditarFosa from './components/modals/ModalEditarFosa';
 import ModalReciboPago from './components/modals/ModalReciboPago';
 import ModalHistorialPagos from './components/modals/ModalHistorialPagos';
 import ModalExpedienteElectronico from './components/modals/ModalExpedienteElectronico';
+import ModalCedulaTitulo from './components/modals/ModalCedulaTitulo';
 import ModalAlerta from './components/common/ModalAlerta';
 
 // Vistas / Páginas
 import Dashboard from './pages/Dashboard';
 import ControlEspacios from './pages/ControlEspacios';
 import PlanoGeneral from './pages/PlanoGeneral';
+import CedulaOficial from './pages/CedulaOficial';
 import FinanzasCaja from './pages/FinanzasCaja';
 import ReportesIngresos from './pages/ReportesIngresos';
 
@@ -100,6 +102,7 @@ export default function App() {
   const [registroAEditar, setRegistroAEditar] = useState(null);
   const [reciboModalItem, setReciboModalItem] = useState(null);
   const [fosaHistorialModal, setFosaHistorialModal] = useState(null);
+  const [cedulaModalItem, setCedulaModalItem] = useState(null);
   const [expedienteModal, setExpedienteModal] = useState({
     abierto: false,
     espacio: null,
@@ -163,6 +166,7 @@ export default function App() {
     setRegistroAEditar(null);
     setReciboModalItem(null);
     setFosaHistorialModal(null);
+    setCedulaModalItem(null);
     setExpedienteModal({ abierto: false, espacio: null, modoInicial: 'expediente' });
     setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null });
     setMenuMobileAbierto(false);
@@ -421,7 +425,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#FAF8F5] text-stone-800 antialiased font-sans relative">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#FAF8F5] text-stone-800 antialiased font-sans relative print:block print:h-auto print:w-full print:overflow-visible print:bg-white">
       
       {/* Overlay Backdrop para Menú Móvil */}
       {menuMobileAbierto && (
@@ -453,7 +457,7 @@ export default function App() {
       />
 
       {/* Contenedor Principal (Header + Vistas de Contenido) */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 print:block print:h-auto print:overflow-visible">
         
         {/* Header Superior Corporativo con Buscador Universal */}
         <Header
@@ -474,7 +478,7 @@ export default function App() {
         />
 
         {/* Área con Scroll de la Vista Activa */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 print:p-0 print:overflow-visible">
           <div className="w-full max-w-[1920px] mx-auto space-y-6">
 
             {/* Vista 1: Dashboard Ejecutivo Estilo SaaS */}
@@ -528,7 +532,16 @@ export default function App() {
               />
             )}
 
-            {/* Vista 4: Control de Caja y Gastos (Solo Administrador) */}
+            {/* Vista 4: Apartado de Edición e Impresión de Cédula Oficial */}
+            {pestanaEfectiva === 'cedula' && (
+              <CedulaOficial
+                registrosFosas={registrosFosas}
+                onActualizarFosa={handleActualizarRegistro}
+                onVolver={() => setPestanaActiva('dashboard')}
+              />
+            )}
+
+            {/* Vista 5: Control de Caja y Gastos (Solo Administrador) */}
             {esAdmin && pestanaEfectiva === 'finanzas' && (
               <FinanzasCaja
                 movimientos={movimientosFinancieros}
@@ -536,7 +549,7 @@ export default function App() {
               />
             )}
 
-            {/* Vista 5: Reportes y Estadísticas de Ocupación (Solo Administrador) */}
+            {/* Vista 6: Reportes y Estadísticas de Ocupación (Solo Administrador) */}
             {esAdmin && pestanaEfectiva === 'reportes' && (
               <ReportesIngresos
                 registrosFosas={registrosFosas}
@@ -563,7 +576,7 @@ export default function App() {
           onEmitirRecibo={(item) => {
             if (esAdmin || puedeRegistrarPagos) setReciboModalItem(item);
           }}
-          onImprimirTitulo={(item) => setRegistroAEditar(item)}
+          onImprimirTitulo={(item) => setCedulaModalItem(item)}
           onClose={() => setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null })}
           esAdmin={esAdmin}
           puedeRegistrarPagos={puedeRegistrarPagos}
@@ -629,6 +642,19 @@ export default function App() {
           modoInicial={expedienteModal.modoInicial}
           onCerrar={() => setExpedienteModal({ abierto: false, espacio: null, modoInicial: 'expediente' })}
           onActualizarEspacio={handleActualizarExpediente}
+        />
+      )}
+
+      {/* Modal de Cédula Oficial (desde menú contextual) */}
+      {cedulaModalItem && (
+        <ModalCedulaTitulo
+          key={cedulaModalItem.id || cedulaModalItem.codigo}
+          espacio={cedulaModalItem}
+          onCerrar={() => setCedulaModalItem(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setCedulaModalItem(fosaActualizada);
+            handleActualizarRegistro(fosaActualizada);
+          }}
         />
       )}
 
