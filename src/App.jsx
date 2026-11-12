@@ -17,6 +17,7 @@ import ModalReciboPago from './components/modals/ModalReciboPago';
 import ModalHistorialPagos from './components/modals/ModalHistorialPagos';
 import ModalExpedienteElectronico from './components/modals/ModalExpedienteElectronico';
 import ModalCedulaTitulo from './components/modals/ModalCedulaTitulo';
+import ModalPermisoArregloTumba from './components/modals/ModalPermisoArregloTumba';
 import ModalAlerta from './components/common/ModalAlerta';
 
 // Vistas / Páginas
@@ -24,6 +25,7 @@ import Dashboard from './pages/Dashboard';
 import ControlEspacios from './pages/ControlEspacios';
 import PlanoGeneral from './pages/PlanoGeneral';
 import CedulaOficial from './pages/CedulaOficial';
+import PermisoArregloTumba from './pages/PermisoArregloTumba';
 import FinanzasCaja from './pages/FinanzasCaja';
 import ReportesIngresos from './pages/ReportesIngresos';
 
@@ -103,6 +105,7 @@ export default function App() {
   const [reciboModalItem, setReciboModalItem] = useState(null);
   const [fosaHistorialModal, setFosaHistorialModal] = useState(null);
   const [cedulaModalItem, setCedulaModalItem] = useState(null);
+  const [permisoModalItem, setPermisoModalItem] = useState(null);
   const [expedienteModal, setExpedienteModal] = useState({
     abierto: false,
     espacio: null,
@@ -167,6 +170,7 @@ export default function App() {
     setReciboModalItem(null);
     setFosaHistorialModal(null);
     setCedulaModalItem(null);
+    setPermisoModalItem(null);
     setExpedienteModal({ abierto: false, espacio: null, modoInicial: 'expediente' });
     setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null });
     setMenuMobileAbierto(false);
@@ -541,6 +545,15 @@ export default function App() {
               />
             )}
 
+            {/* Vista 4B: Permiso de Arreglo de Tumba */}
+            {pestanaEfectiva === 'permiso-arreglo' && (
+              <PermisoArregloTumba
+                registrosFosas={registrosFosas}
+                onActualizarFosa={handleActualizarRegistro}
+                onVolver={() => setPestanaActiva('dashboard')}
+              />
+            )}
+
             {/* Vista 5: Control de Caja y Gastos (Solo Administrador) */}
             {esAdmin && pestanaEfectiva === 'finanzas' && (
               <FinanzasCaja
@@ -577,6 +590,7 @@ export default function App() {
             if (esAdmin || puedeRegistrarPagos) setReciboModalItem(item);
           }}
           onImprimirTitulo={(item) => setCedulaModalItem(item)}
+          onImprimirPermisoTumba={(item) => setPermisoModalItem(item)}
           onClose={() => setMenuContextual({ visible: false, x: 0, y: 0, itemSeleccionado: null })}
           esAdmin={esAdmin}
           puedeRegistrarPagos={puedeRegistrarPagos}
@@ -653,6 +667,19 @@ export default function App() {
           onCerrar={() => setCedulaModalItem(null)}
           onActualizarFosa={(fosaActualizada) => {
             setCedulaModalItem(fosaActualizada);
+            handleActualizarRegistro(fosaActualizada);
+          }}
+        />
+      )}
+
+      {/* Modal de Permiso de Arreglo de Tumba (desde menú contextual) */}
+      {permisoModalItem && (
+        <ModalPermisoArregloTumba
+          key={permisoModalItem.id || permisoModalItem.codigo}
+          espacio={permisoModalItem}
+          onCerrar={() => setPermisoModalItem(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setPermisoModalItem(fosaActualizada);
             handleActualizarRegistro(fosaActualizada);
           }}
         />

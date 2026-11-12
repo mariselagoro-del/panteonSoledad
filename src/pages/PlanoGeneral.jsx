@@ -21,9 +21,11 @@ import {
   Download,
   FileImage,
   History,
-  X
+  X,
+  Hammer
 } from 'lucide-react';
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
+import ModalPermisoArregloTumba from '../components/modals/ModalPermisoArregloTumba';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { obtenerHistorialPagosFosa } from '../utils/pagosUtils';
 import { coincideEspacioConBusqueda, formatearNumeroFosa, formatearFecha } from '../utils/busquedaUtils';
@@ -87,6 +89,7 @@ export default function PlanoGeneral({
   });
 
   const [cedulaAImprimir, setCedulaAImprimir] = useState(null);
+  const [permisoAImprimir, setPermisoAImprimir] = useState(null);
 
   // Filtrado reactivo por término de búsqueda dentro de cada sección (busca en todos los difuntos, sin importar el orden ni acentos)
   const obtenerListaFiltrada = (clave, lista) => {
@@ -901,6 +904,15 @@ export default function PlanoGeneral({
                 <Printer className="w-3.5 h-3.5 text-stone-600" />
                 <span>Imprimir Título de Propiedad</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setPermisoAImprimir(fosaSeleccionada)}
+                className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer border border-amber-200"
+              >
+                <Hammer className="w-3.5 h-3.5 text-amber-700" />
+                <span>Imprimir Permiso de Arreglo</span>
+              </button>
             </div>
           )}
 
@@ -916,6 +928,19 @@ export default function PlanoGeneral({
           onCerrar={() => setCedulaAImprimir(null)}
           onActualizarFosa={(fosaActualizada) => {
             setCedulaAImprimir(fosaActualizada);
+            if (onActualizarFosa) onActualizarFosa(fosaActualizada);
+          }}
+        />
+      )}
+
+      {/* Modal de Permiso de Arreglo de Tumba */}
+      {permisoAImprimir && (
+        <ModalPermisoArregloTumba
+          key={permisoAImprimir.id || permisoAImprimir.codigo}
+          espacio={permisoAImprimir}
+          onCerrar={() => setPermisoAImprimir(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setPermisoAImprimir(fosaActualizada);
             if (onActualizarFosa) onActualizarFosa(fosaActualizada);
           }}
         />

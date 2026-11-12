@@ -1,6 +1,6 @@
 // src/components/common/ContextMenu.jsx
 import { useEffect, useRef } from 'react';
-import { Pencil, Printer, Receipt, Eye, FolderPlus, History, CheckCircle2 } from 'lucide-react';
+import { Pencil, Printer, Receipt, Eye, FolderPlus, History, CheckCircle2, Hammer } from 'lucide-react';
 import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 
 export default function ContextMenu({
@@ -10,6 +10,7 @@ export default function ContextMenu({
   onEditar,
   onEmitirRecibo,
   onImprimirTitulo,
+  onImprimirPermisoTumba,
   onAbrirExpediente,
   onAbrirHistorial,
   onClose,
@@ -116,6 +117,18 @@ export default function ContextMenu({
           <Printer className="w-4 h-4 text-teal-600" />
           <span>Imprimir Cédula de Título</span>
         </button>
+
+        {/* 6. Permiso de Arreglo de Tumba */}
+        {onImprimirPermisoTumba && (
+          <button
+            type="button"
+            onClick={() => { onImprimirPermisoTumba(registro); onClose(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-amber-50 text-amber-900 hover:text-amber-950 transition-colors text-left cursor-pointer"
+          >
+            <Hammer className="w-4 h-4 text-amber-600" />
+            <span>Imprimir Permiso de Arreglo</span>
+          </button>
+        )}
       </div>
     </div>
   );

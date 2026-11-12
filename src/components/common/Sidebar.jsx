@@ -10,7 +10,8 @@ import {
   X,
   Sprout,
   LogOut,
-  Award
+  Award,
+  Hammer
 } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
 
@@ -53,6 +54,12 @@ export default function Sidebar({
       id: 'cedula',
       label: 'Cédula Oficial',
       icon: Award,
+      hasChevron: true
+    },
+    {
+      id: 'permiso-arreglo',
+      label: 'Permiso Arreglo Tumba',
+      icon: Hammer,
       hasChevron: true
     },
     {

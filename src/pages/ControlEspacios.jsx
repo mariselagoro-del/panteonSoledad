@@ -15,9 +15,11 @@ import {
   Folder,
   History,
   X,
-  Users
+  Users,
+  Hammer
 } from 'lucide-react';
 import ModalCedulaTitulo from '../components/modals/ModalCedulaTitulo';
+import ModalPermisoArregloTumba from '../components/modals/ModalPermisoArregloTumba';
 import ModalReciboPago from '../components/modals/ModalReciboPago';
 import { calcularEstadoExpediente } from '../constants/expedienteConfig';
 import { coincideEspacioConBusqueda, formatearNumeroFosa, formatearFecha } from '../utils/busquedaUtils';
@@ -61,6 +63,7 @@ export default function ControlEspacios({
 
   // Modales
   const [espacioImprimir, setEspacioImprimir] = useState(null);
+  const [permisoImprimir, setPermisoImprimir] = useState(null);
   const [modalRecibo, setModalRecibo] = useState({ abierto: false, espacio: null });
   const [modalDifuntosFosa, setModalDifuntosFosa] = useState(null);
 
@@ -551,6 +554,16 @@ export default function ControlEspacios({
                           >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
+
+                          {/* Botón Permiso de Arreglo de Tumba */}
+                          <button
+                            type="button"
+                            onClick={() => setPermisoImprimir(item)}
+                            className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 cursor-pointer transition-colors"
+                            title="Imprimir Permiso de Arreglo de Tumba"
+                          >
+                            <Hammer className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
 
@@ -617,6 +630,19 @@ export default function ControlEspacios({
           onCerrar={() => setEspacioImprimir(null)}
           onActualizarFosa={(fosaActualizada) => {
             setEspacioImprimir(fosaActualizada);
+            if (onActualizarFosa) onActualizarFosa(fosaActualizada);
+          }}
+        />
+      )}
+
+      {/* Modal de Permiso de Arreglo de Tumba */}
+      {permisoImprimir && (
+        <ModalPermisoArregloTumba
+          key={permisoImprimir.id || permisoImprimir.codigo}
+          espacio={permisoImprimir}
+          onCerrar={() => setPermisoImprimir(null)}
+          onActualizarFosa={(fosaActualizada) => {
+            setPermisoImprimir(fosaActualizada);
             if (onActualizarFosa) onActualizarFosa(fosaActualizada);
           }}
         />
