@@ -20,7 +20,6 @@ export default function Header({
   registrosFosas = [],
   onSeleccionarFosa,
   onNavegarAPadron,
-  totalConAdeudo = 0,
   usuarioActual = null,
   esAdmin = true,
   puedeRegistrarPagos = true,

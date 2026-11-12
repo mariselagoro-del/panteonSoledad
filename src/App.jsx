@@ -405,8 +405,6 @@ export default function App() {
   };
 
   // Métricas calculadas
-  const totalConAdeudo = (registrosFosas || []).filter(r => r.estatusPago === 'Con Adeudo').length;
-
   const totalIngresos = (movimientosFinancieros || [])
     .filter(m => (m.tipo === 'Ingreso' || m.tipo_movimiento === 'Ingreso'))
     .reduce((acc, curr) => acc + Number(curr.monto || 0), 0);
@@ -468,7 +466,6 @@ export default function App() {
             setBusquedaGlobal(query);
             setPestanaActiva('busqueda');
           }}
-          totalConAdeudo={totalConAdeudo}
           usuarioActual={usuarioAutenticado}
           esAdmin={esAdmin}
           puedeRegistrarPagos={puedeRegistrarPagos}

@@ -8,13 +8,11 @@ import {
   Archive, 
   Sprout, 
   Printer, 
-  Pencil, 
   MapPin, 
   CheckCircle2, 
   AlertCircle, 
   Receipt,
   Folder,
-  FolderPlus,
   History,
   X,
   Users
@@ -544,53 +542,6 @@ export default function ControlEspacios({
                       {/* Acciones */}
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5 opacity-90 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                          
-                          {/* Botón: Ya Pagó (Admin y Operador que puede registrar pagos) */}
-                          {(esAdmin || puedeRegistrarPagos) && !alCorriente && (
-                            <button
-                              type="button"
-                              onClick={() => onAbrirHistorial && onAbrirHistorial(item, { filtro: 'Adeudos' })}
-                              className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 cursor-pointer transition-colors shadow-2xs"
-                              title="Registrar que Ya Pagó con Recibo Físico (Reflejar en sistema)"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                            </button>
-                          )}
-
-                          {/* Botón: Ver Historial de Pagos de la Tumba (Admin y Operador que puede registrar pagos) */}
-                          {(esAdmin || puedeRegistrarPagos) && (
-                            <button
-                              type="button"
-                              onClick={() => onAbrirHistorial && onAbrirHistorial(item)}
-                              className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 cursor-pointer transition-colors"
-                              title="Ver Historial de Pagos y Refrendos de la Fosa"
-                            >
-                              <History className="w-3.5 h-3.5 text-teal-700" />
-                            </button>
-                          )}
-
-                          {/* Botón 1: Adjuntar / Gestionar Documentos del Expediente (FolderPlus) */}
-                          <button
-                            type="button"
-                            onClick={() => onAbrirExpediente && onAbrirExpediente(item, 'expediente')}
-                            className="p-1.5 rounded-lg bg-cream-100 hover:bg-cream-200 text-stone-700 border border-cream-300 cursor-pointer transition-colors"
-                            title="Adjuntar / Gestionar Documentos del Expediente"
-                          >
-                            <FolderPlus className="w-3.5 h-3.5 text-stone-600" />
-                          </button>
-
-                          {/* Botón Emitir / Imprimir Recibo de Pago (Admin y Operador que puede registrar pagos) */}
-                          {(esAdmin || puedeRegistrarPagos) && (
-                            <button
-                              type="button"
-                              onClick={() => handleAbrirRecibo(item)}
-                              className="p-1.5 rounded-lg bg-olive-100 hover:bg-olive-200 text-olive-900 border border-olive-300 cursor-pointer transition-colors"
-                              title="Cobrar y Emitir Recibo Oficial de Pago"
-                            >
-                              <Receipt className="w-3.5 h-3.5 text-olive-800" />
-                            </button>
-                          )}
-
                           {/* Botón Cédula de Título */}
                           <button
                             type="button"
@@ -599,16 +550,6 @@ export default function ControlEspacios({
                             title="Imprimir Cédula Oficial de Título"
                           >
                             <Printer className="w-3.5 h-3.5" />
-                          </button>
-
-                          {/* Botón Editar Lote */}
-                          <button
-                            type="button"
-                            onClick={() => onSeleccionarRegistro && onSeleccionarRegistro(item)}
-                            className="p-1.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white cursor-pointer transition-colors"
-                            title="Editar Datos de Fosa"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
