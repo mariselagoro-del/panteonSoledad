@@ -10,8 +10,7 @@ import {
   X,
   Sprout,
   LogOut,
-  Award,
-  Hammer
+  Files
 } from 'lucide-react';
 import logoPanteon from '../../assets/logo-panteon.jpg';
 
@@ -51,15 +50,9 @@ export default function Sidebar({
       hasChevron: true
     },
     {
-      id: 'cedula',
-      label: 'Cédula Oficial',
-      icon: Award,
-      hasChevron: true
-    },
-    {
-      id: 'permiso-arreglo',
-      label: 'Permiso Arreglo Tumba',
-      icon: Hammer,
+      id: 'formatos',
+      label: 'Formatos Oficiales',
+      icon: Files,
       hasChevron: true
     },
     {
@@ -88,6 +81,13 @@ export default function Sidebar({
   };
 
   const isItemActive = (id) => {
+    if (id === 'formatos') {
+      return (
+        pestanaActiva === 'formatos' ||
+        pestanaActiva === 'cedula' ||
+        pestanaActiva === 'permiso-arreglo'
+      );
+    }
     return pestanaActiva === id;
   };
 

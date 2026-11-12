@@ -24,8 +24,7 @@ import ModalAlerta from './components/common/ModalAlerta';
 import Dashboard from './pages/Dashboard';
 import ControlEspacios from './pages/ControlEspacios';
 import PlanoGeneral from './pages/PlanoGeneral';
-import CedulaOficial from './pages/CedulaOficial';
-import PermisoArregloTumba from './pages/PermisoArregloTumba';
+import FormatosOficiales from './pages/FormatosOficiales';
 import FinanzasCaja from './pages/FinanzasCaja';
 import ReportesIngresos from './pages/ReportesIngresos';
 
@@ -536,21 +535,17 @@ export default function App() {
               />
             )}
 
-            {/* Vista 4: Apartado de Edición e Impresión de Cédula Oficial */}
-            {pestanaEfectiva === 'cedula' && (
-              <CedulaOficial
+            {/* Vista 4: Concentrador de Formatos Oficiales con pestañas */}
+            {(pestanaEfectiva === 'formatos' ||
+              pestanaEfectiva === 'cedula' ||
+              pestanaEfectiva === 'permiso-arreglo') && (
+              <FormatosOficiales
                 registrosFosas={registrosFosas}
                 onActualizarFosa={handleActualizarRegistro}
                 onVolver={() => setPestanaActiva('dashboard')}
-              />
-            )}
-
-            {/* Vista 4B: Permiso de Arreglo de Tumba */}
-            {pestanaEfectiva === 'permiso-arreglo' && (
-              <PermisoArregloTumba
-                registrosFosas={registrosFosas}
-                onActualizarFosa={handleActualizarRegistro}
-                onVolver={() => setPestanaActiva('dashboard')}
+                formatoInicial={
+                  pestanaEfectiva === 'permiso-arreglo' ? 'permiso-arreglo' : 'cedula'
+                }
               />
             )}
 
