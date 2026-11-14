@@ -80,6 +80,8 @@ export default function ModalPermisoArregloTumba({
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
+            overflow: visible !important;
+            height: auto !important;
           }
           #root {
             display: none !important;

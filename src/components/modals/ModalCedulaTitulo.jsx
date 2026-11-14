@@ -1,5 +1,6 @@
 // src/components/modals/ModalCedulaTitulo.jsx
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Printer, X, Award, Pencil, Eye } from 'lucide-react';
 import {
   obtenerPlantillaCedula,
@@ -72,19 +73,55 @@ export default function ModalCedulaTitulo({ espacio, onCerrar, onActualizarFosa 
   };
 
   const handlePrint = () => {
+    guardarPlantillaCedula(plantilla);
+    guardarDatosCedulaEspacio(espacio, datosCedula);
     // Asegurar modo vista antes de imprimir
     if (modo !== 'vista') {
       setModo('vista');
-      setTimeout(() => window.print(), 80);
+      setTimeout(() => window.print(), 100);
     } else {
       window.print();
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4 z-50 overflow-y-auto animate-fadeIn print:bg-white print:p-0 print:static">
+  const contenidoModal = (
+    <div className="cedula-print-portal fixed inset-0 z-[100] bg-black/60 backdrop-blur-2xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-fadeIn print:bg-white print:p-0 print:static print:block print:w-full print:h-auto">
+      <style>{`
+        @media print {
+          @page {
+            size: letter portrait !important;
+            margin: 6mm 8mm !important;
+          }
+          html, body {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            height: auto !important;
+            width: 100% !important;
+          }
+          #root {
+            display: none !important;
+          }
+          .cedula-print-portal {
+            position: static !important;
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+            overflow: visible !important;
+          }
+          .cedula-print-portal * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
+
       {/* Contenedor del Modal */}
-      <div className="bg-white rounded-3xl border border-cream-300 shadow-2xl max-w-4xl w-full p-5 sm:p-8 space-y-5 max-h-[95vh] overflow-y-auto print:p-0 print:border-none print:shadow-none print:max-h-none print:rounded-none print:max-w-none print:overflow-visible">
+      <div className="bg-white rounded-3xl border border-cream-300 shadow-2xl max-w-4xl w-full p-5 sm:p-8 space-y-5 max-h-[95vh] overflow-y-auto print:p-0 print:border-none print:shadow-none print:max-h-none print:rounded-none print:max-w-none print:overflow-visible print:w-full print:block print:space-y-0">
         {/* Barra de Acciones del Modal (Oculta al imprimir) */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-cream-200 print:hidden">
           <div className="flex items-center gap-2.5">
@@ -182,4 +219,6 @@ export default function ModalCedulaTitulo({ espacio, onCerrar, onActualizarFosa 
       </div>
     </div>
   );
+
+  return createPortal(contenidoModal, document.body);
 }

@@ -1,5 +1,6 @@
 // src/components/modals/ModalReciboPago.jsx
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Printer, 
@@ -429,11 +430,45 @@ export default function ModalReciboPago({
     window.print();
   };
 
-  return (
+  const contenidoModal = (
     <div 
       onClick={onCerrar}
-      className="fixed inset-0 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto animate-fadeIn"
+      className="recibo-print-portal fixed inset-0 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto animate-fadeIn print:bg-white print:p-0 print:static print:block print:w-full print:h-auto"
     >
+      <style>{`
+        @media print {
+          @page {
+            size: landscape !important;
+            margin: 6mm 8mm !important;
+          }
+          html, body {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            width: 100% !important;
+          }
+          #root {
+            display: none !important;
+          }
+          .recibo-print-portal {
+            position: static !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+          }
+          .recibo-print-portal * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
       <div 
         onClick={(e) => e.stopPropagation()}
         className={`bg-white rounded-3xl border border-cream-300 shadow-2xl overflow-hidden my-4 max-h-[92vh] flex flex-col print:p-0 print:border-none print:shadow-none print:max-w-none print:max-h-none print:rounded-none print:my-0 print:bg-transparent ${
@@ -887,4 +922,6 @@ export default function ModalReciboPago({
       )}
     </div>
   );
+
+  return createPortal(contenidoModal, document.body);
 }

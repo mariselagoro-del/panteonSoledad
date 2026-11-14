@@ -205,6 +205,11 @@ export default function FormatosOficiales({
             size: letter portrait !important;
             margin: 5mm !important;
           }
+          html, body {
+            overflow: visible !important;
+            height: auto !important;
+            background: #ffffff !important;
+          }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
