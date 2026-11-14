@@ -96,8 +96,9 @@ export default function ModalCedulaTitulo({ espacio, onCerrar, onActualizarFosa 
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
-            overflow: visible !important;
-            height: auto !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
             width: 100% !important;
           }
           #root {
@@ -107,11 +108,14 @@ export default function ModalCedulaTitulo({ espacio, onCerrar, onActualizarFosa 
             position: static !important;
             display: block !important;
             width: 100% !important;
-            height: auto !important;
+            height: 100% !important;
+            max-height: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
             background: #ffffff !important;
-            overflow: visible !important;
+            overflow: hidden !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .cedula-print-portal * {
             -webkit-print-color-adjust: exact !important;

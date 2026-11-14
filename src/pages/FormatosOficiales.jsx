@@ -198,7 +198,7 @@ export default function FormatosOficiales({
   };
 
   return (
-    <div className="space-y-5 animate-fadeIn print:space-y-0">
+    <div className="space-y-5 animate-fadeIn print:space-y-0 print:overflow-hidden print:max-h-[268mm] print:page-break-inside-avoid print:break-inside-avoid">
       <style>{`
         @media print {
           @page {
@@ -206,8 +206,9 @@ export default function FormatosOficiales({
             margin: 5mm !important;
           }
           html, body {
-            overflow: visible !important;
-            height: auto !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
             background: #ffffff !important;
           }
           * {
