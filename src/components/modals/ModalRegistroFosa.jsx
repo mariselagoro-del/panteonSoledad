@@ -41,8 +41,45 @@ function obtenerPrefijoSeccion(seccionNombre) {
 }
 
 /**
- * Función que calcula de forma automática el siguiente número consecutivo disponible
- * en base a la sección seleccionada y los registros existentes en el sistema.
+ * Normaliza y construye el código oficial y el número de fosa
+ * permitiendo cualquier letra, guion o nomenclatura manual libremente (ej: 176-A, 262-B, 150).
+ */
+function formatearCodigoYNumero(inputRaw, seccionNombre) {
+  const prefijo = obtenerPrefijoSeccion(seccionNombre);
+  let limpio = String(inputRaw || '').trim().toUpperCase();
+
+  // Remover prefijo conocido si fue escrito por el usuario (ej: F1-, F2-, N-, CR-)
+  if (/^(F[1-5]|N|CR|F)-/i.test(limpio)) {
+    limpio = limpio.replace(/^(F[1-5]|N|CR|F)-/i, '').trim();
+  }
+
+  // Detectar formato: número + guion/espacio opcional + letra (ej: 176-A, 176A, 176 A, 262-B, 10-BIS)
+  const matchNumLetra = limpio.match(/^(\d+)\s*[-/ ]?\s*([A-Za-z]+[\w-]*)$/);
+  let numeroFinal;
+  let codigoFinal;
+
+  if (matchNumLetra) {
+    const numParte = matchNumLetra[1];
+    const sufijoParte = matchNumLetra[2].toUpperCase();
+    numeroFinal = `${numParte}-${sufijoParte}`;
+    codigoFinal = `${prefijo}-${numParte.padStart(3, '0')}-${sufijoParte}`;
+  } else if (/^\d+$/.test(limpio)) {
+    // Solo números enteros (ej: 691, 15)
+    numeroFinal = limpio;
+    codigoFinal = `${prefijo}-${limpio.padStart(3, '0')}`;
+  } else {
+    // Cualquier otra nomenclatura manual (ej: LOTE-3, BIS-1)
+    numeroFinal = limpio;
+    codigoFinal = `${prefijo}-${limpio}`;
+  }
+
+  return { codigoFinal, numeroFinal };
+}
+
+/**
+ * Función que calcula de forma referencial el siguiente número consecutivo libre
+ * en base a las fosas estrictamente numéricas existentes en la sección.
+ * Las fosas con letras (como 176-A) NO alteran este consecutivo.
  */
 function calcularSiguienteNumero(seccionNombre, registros = []) {
   const prefijo = obtenerPrefijoSeccion(seccionNombre);
@@ -57,11 +94,10 @@ function calcularSiguienteNumero(seccionNombre, registros = []) {
     const coincidePrefijo = cod.startsWith(prefijo.toUpperCase());
 
     if (coincideSeccion || coincidePrefijo) {
-      // Tomar solo la parte numérica principal
-      const sinPref = cod.replace(/^[A-Z]+[0-9]*-/, '');
-      const matchNum = sinPref.match(/^(\d+)/);
-      if (matchNum) {
-        const num = parseInt(matchNum[1], 10);
+      const sinPref = cod.replace(/^[A-Z]+[0-9]*-/, '').trim();
+      // Solo fosas estrictamente numéricas determinan el consecutivo
+      if (/^\d+$/.test(sinPref)) {
+        const num = parseInt(sinPref, 10);
         if (!isNaN(num) && num > maxNumero) {
           maxNumero = num;
         }
@@ -136,21 +172,16 @@ export default function ModalRegistroFosa({
   const [cargandoDocId, setCargandoDocId] = useState(null);
   const [alertaConfig, setAlertaConfig] = useState(null);
 
-  // Control flexible para número de fosa (automático o personalizado ej: 176-A)
+  // Control manual libre para número de fosa (ej: 176-A, 262-B, 150)
   const [numeroFosaInput, setNumeroFosaInput] = useState('');
-  const [esPersonalizado, setEsPersonalizado] = useState(false);
 
-  // Consecutivo calculado para la sección actual
-  const consecutivoCalculado = useMemo(() => {
-    const sig = calcularSiguienteNumero(formData.seccionNombre, listaRegistros);
-    return String(sig).padStart(3, '0');
+  // Consecutivo sugerido libre para la sección actual (solo como referencia opcional)
+  const consecutivoSugerido = useMemo(() => {
+    return calcularSiguienteNumero(formData.seccionNombre, listaRegistros);
   }, [formData.seccionNombre, listaRegistros]);
-
-  const numeroFosaMostrar = esPersonalizado ? numeroFosaInput : consecutivoCalculado;
 
   const resetFormulario = useCallback(() => {
     setDocumentosExpediente({});
-    setEsPersonalizado(false);
     setNumeroFosaInput('');
     setFormData({
       codigo: '',
@@ -254,56 +285,7 @@ export default function ModalRegistroFosa({
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const inputLimpio = (numeroFosaMostrar || '').trim();
-
-    if (!inputLimpio || !formData.titularNombre.trim()) {
-      setAlertaConfig({
-        tipo: 'advertencia',
-        titulo: 'Campos Requeridos Incompletos',
-        mensaje: 'Por favor completa el número de fosa y el nombre del titular para continuar con el registro.',
-        textoBotonPrincipal: 'Entendido',
-        onAceptar: () => setAlertaConfig(null)
-      });
-      return;
-    }
-
-    const prefijo = obtenerPrefijoSeccion(formData.seccionNombre);
-    let codigoFinal;
-    let numeroFinal;
-
-    if (new RegExp(`^${prefijo}-`, 'i').test(inputLimpio)) {
-      codigoFinal = inputLimpio.toUpperCase();
-      numeroFinal = inputLimpio.replace(new RegExp(`^${prefijo}-`, 'i'), '').trim().toUpperCase();
-    } else {
-      const sinPref = inputLimpio.replace(/^[A-Za-z]+[0-9]*-/, '').trim().toUpperCase();
-      let numFormateado = sinPref;
-      if (/^\d+$/.test(sinPref)) {
-        numFormateado = sinPref.padStart(3, '0');
-      } else if (/^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$/.test(sinPref)) {
-        const m = sinPref.match(/^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$/);
-        numFormateado = `${m[1].padStart(3, '0')}-${m[2].toUpperCase()}`;
-      }
-      codigoFinal = `${prefijo}-${numFormateado}`;
-      numeroFinal = sinPref;
-    }
-
-    // Validar si la fosa ya existe en el padrón
-    const duplicado = listaRegistros.find(r => 
-      (r.codigo || '').trim().toUpperCase() === codigoFinal.toUpperCase()
-    );
-    if (duplicado) {
-      setAlertaConfig({
-        tipo: 'advertencia',
-        titulo: 'Número de Fosa Ya Registrado',
-        mensaje: `La fosa ${numeroFinal} en ${formData.seccionNombre} (Código: ${codigoFinal}) ya existe en el sistema y pertenece a "${duplicado.titularNombre || 'Titular Registrado'}". Si deseas registrar difuntos en esta fosa, búscate en el Padrón y haz clic en Editar.`,
-        textoBotonPrincipal: 'Entendido',
-        onAceptar: () => setAlertaConfig(null)
-      });
-      return;
-    }
-
+  const guardarRegistro = (codigoFinal, numeroFinal) => {
     const nuevoRegistro = {
       id: Date.now(),
       codigo: codigoFinal.toUpperCase(),
@@ -341,6 +323,57 @@ export default function ModalRegistroFosa({
 
     if (onGuardar) onGuardar(nuevoRegistro);
     handleClose();
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const inputLimpio = (numeroFosaInput || '').trim();
+
+    if (!inputLimpio) {
+      setAlertaConfig({
+        tipo: 'advertencia',
+        titulo: 'Número de Fosa Requerido',
+        mensaje: 'Por favor ingresa el número de fosa que deseas registrar (puedes incluir guion y letra, ej: 176-A, 262-B, 150).',
+        textoBotonPrincipal: 'Entendido',
+        onAceptar: () => setAlertaConfig(null)
+      });
+      return;
+    }
+
+    if (!formData.titularNombre.trim()) {
+      setAlertaConfig({
+        tipo: 'advertencia',
+        titulo: 'Nombre de Titular Requerido',
+        mensaje: 'Por favor ingresa el nombre del titular o concesionario de la fosa para continuar con el registro.',
+        textoBotonPrincipal: 'Entendido',
+        onAceptar: () => setAlertaConfig(null)
+      });
+      return;
+    }
+
+    const { codigoFinal, numeroFinal } = formatearCodigoYNumero(inputLimpio, formData.seccionNombre);
+
+    // Validar si la fosa ya existe en el padrón
+    const duplicado = listaRegistros.find(r => 
+      (r.codigo || '').trim().toUpperCase() === codigoFinal.toUpperCase()
+    );
+    if (duplicado) {
+      setAlertaConfig({
+        tipo: 'advertencia',
+        titulo: 'Fosa Ya Existente',
+        mensaje: `La fosa ${numeroFinal} en ${formData.seccionNombre} (${codigoFinal}) ya existe en el sistema a nombre de "${duplicado.titularNombre || 'Titular Registrado'}". ¿Deseas agregar este registro de todas formas o prefieres cambiar el número?`,
+        textoBotonPrincipal: 'Registrar de todos modos',
+        textoBotonSecundario: 'Cambiar número',
+        onAceptar: () => {
+          setAlertaConfig(null);
+          guardarRegistro(codigoFinal, numeroFinal);
+        },
+        onCancelar: () => setAlertaConfig(null)
+      });
+      return;
+    }
+
+    guardarRegistro(codigoFinal, numeroFinal);
   };
 
   return (
@@ -400,34 +433,31 @@ export default function ModalRegistroFosa({
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <label className="block font-bold text-stone-700">Número de Fosa *</label>
-                {esPersonalizado && (
+                {consecutivoSugerido && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setNumeroFosaInput('');
-                      setEsPersonalizado(false);
-                    }}
+                    onClick={() => setNumeroFosaInput(String(consecutivoSugerido))}
                     className="text-[10px] text-teal-700 hover:text-teal-900 underline font-semibold cursor-pointer"
+                    title={`Llenar con el siguiente consecutivo libre (#${consecutivoSugerido})`}
                   >
-                    Usar consecutivo
+                    + Consecutivo #{consecutivoSugerido}
                   </button>
                 )}
               </div>
               <input
                 type="text"
-                value={numeroFosaMostrar}
-                onChange={(e) => {
-                  setNumeroFosaInput(e.target.value);
-                  setEsPersonalizado(true);
-                }}
-                placeholder="Ej: 176-A, 262-A, 691"
+                value={numeroFosaInput}
+                onChange={(e) => setNumeroFosaInput(e.target.value)}
+                placeholder="Ej: 176-A, 262-A, 150..."
                 className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-2xs"
               />
               <span className="text-[10px] text-stone-500 block">
-                {esPersonalizado ? (
-                  <span className="text-amber-800 font-medium">Número manual (permite sufijos con letra ej: 176-A)</span>
+                {numeroFosaInput.trim() ? (
+                  <span className="text-teal-900 font-medium">
+                    Asignando número: <strong>{numeroFosaInput.trim().toUpperCase()}</strong> (admite letras y guiones ej: 176-A)
+                  </span>
                 ) : (
-                  <>Consecutivo calculado de <strong>{formData.seccionNombre}</strong> (puedes editarlo si tiene letra ej: 176-A)</>
+                  <>Escribe el número con el guión y letra que desees (ej: <strong>176-A</strong>, <strong>262-B</strong>, <strong>150</strong>).</>
                 )}
               </span>
             </div>
