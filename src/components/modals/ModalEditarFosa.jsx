@@ -283,12 +283,31 @@ export default function ModalEditarFosa({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
               <label className="block font-bold text-stone-700">Número de Fosa</label>
-              <input
-                type="text"
-                disabled
-                value={formatearNumeroFosa(formData.codigo)}
-                className="w-full bg-cream-50 border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900"
-              />
+              {esAdmin ? (
+                <input
+                  type="text"
+                  value={formatearNumeroFosa(formData.codigo)}
+                  onChange={(e) => {
+                    const nuevoValor = e.target.value.trim().toUpperCase();
+                    const prefijo = (formData.codigo || '').match(/^[A-Za-z]+[0-9]*-/)?.[0] || 'F1-';
+                    const sinPref = nuevoValor.replace(/^[A-Za-z]+[0-9]*-/, '').trim();
+                    setFormData(prev => ({
+                      ...prev,
+                      codigo: `${prefijo}${sinPref}`,
+                      numero: sinPref
+                    }));
+                  }}
+                  className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                  placeholder="Ej: 176-A, 262-A"
+                />
+              ) : (
+                <input
+                  type="text"
+                  disabled
+                  value={formatearNumeroFosa(formData.codigo)}
+                  className="w-full bg-cream-50 border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900"
+                />
+              )}
             </div>
 
             <div className="space-y-1">

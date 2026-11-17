@@ -80,6 +80,8 @@ def roman_to_num(sec_str):
         return "Sección 5", "5"
     if "NICHO" in s:
         return "Zona de Nichos", "N"
+    if "CRIPTA" in s:
+        return "Criptas", "CR"
     return "Sección 1", "1"
 
 def read_excel_raw():
@@ -151,14 +153,48 @@ def process_all_sheets():
         if not num_raw and not sec_raw and not difunto_raw and not titular_raw:
             continue
             
-        try:
-            num_int = int(float(str(num_raw).replace(',', '.')))
-        except Exception:
-            num_int = 1
-            
         seccion_nombre, sec_prefix = roman_to_num(sec_raw)
-        codigo = f"F{sec_prefix}-{str(num_int).zfill(3)}"
-        
+
+        num_str = str(num_raw).strip()
+        if num_str.lower() == 'lkuku' and sec_prefix == '3':
+            num_str = '551'
+
+        m_alpha = re.match(r'^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$', num_str)
+        if m_alpha:
+            num_int = int(m_alpha.group(1))
+            suffix = m_alpha.group(2).upper()
+            num_disp = f"{num_int}-{suffix}"
+            if sec_prefix == 'CR':
+                codigo = f"CR-{str(num_int).zfill(3)}-{suffix}"
+                tipo_espacio = "Mausoleo"
+            elif sec_prefix == 'N':
+                codigo = f"N-{str(num_int).zfill(3)}-{suffix}"
+                tipo_espacio = "Nicho"
+            else:
+                codigo = f"F{sec_prefix}-{str(num_int).zfill(3)}-{suffix}"
+                tipo_espacio = "Fosa"
+        else:
+            try:
+                num_int = int(float(num_str.replace(',', '.')))
+            except Exception:
+                num_int = None
+
+            if num_int is not None:
+                num_disp = str(num_int)
+                if sec_prefix == 'CR':
+                    codigo = f"CR-{str(num_int).zfill(3)}"
+                    tipo_espacio = "Mausoleo"
+                elif sec_prefix == 'N':
+                    codigo = f"N-{str(num_int).zfill(3)}"
+                    tipo_espacio = "Nicho"
+                else:
+                    codigo = f"F{sec_prefix}-{str(num_int).zfill(3)}"
+                    tipo_espacio = "Fosa"
+            else:
+                codigo = f"F{sec_prefix}-GEN-{len(espacios_map) + 1}"
+                num_disp = f"GEN-{len(espacios_map) + 1}"
+                tipo_espacio = "Fosa"
+
         nombre_titular = titular_raw or "Titular No Registrado"
         if not titular_raw and parentesco and "titular es" in parentesco.lower():
             nombre_titular = parentesco
@@ -219,8 +255,9 @@ def process_all_sheets():
             espacios_map[codigo] = {
                 "id": len(espacios_map) + 1,
                 "codigo": codigo,
+                "numero": num_disp,
                 "seccionNombre": seccion_nombre,
-                "tipoEspacio": "Fosa",
+                "tipoEspacio": tipo_espacio,
                 "titularNombre": nombre_titular,
                 "titularTelefono": telefono,
                 "titularCorreo": "",
@@ -419,6 +456,51 @@ def process_all_sheets():
                 "coordenadas": f"19.54{len(espacios_map)%90:02d}, -99.23{len(espacios_map)%90:02d}"
             }
 
+    # 3.5. Revisar hoja 'Concentrado' para incluir cualquier fosa alfanumérica adicional (ej: 312-B, 281-A)
+    concentrado_rows = raw_sheets.get('Concentrado', [])
+    print(f"Revisando hoja 'Concentrado' ({len(concentrado_rows)} filas) para fosas alfanuméricas adicionales...")
+    for r in concentrado_rows[1:]:
+        sec_raw = r.get('A', '')
+        num_raw = r.get('B', '')
+        difunto_raw = clean_str(r.get('C', ''))
+        titular_raw = clean_str(r.get('G', ''))
+
+        m_alpha = re.match(r'^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$', str(num_raw).strip())
+        if m_alpha:
+            num_int = int(m_alpha.group(1))
+            suffix = m_alpha.group(2).upper()
+            sec_nom, sec_pref = roman_to_num(sec_raw)
+            codigo = f"F{sec_pref}-{str(num_int).zfill(3)}-{suffix}"
+            if codigo not in espacios_map:
+                espacios_map[codigo] = {
+                    "id": len(espacios_map) + 1,
+                    "codigo": codigo,
+                    "numero": f"{num_int}-{suffix}",
+                    "seccionNombre": sec_nom,
+                    "tipoEspacio": "Fosa",
+                    "titularNombre": titular_raw or "Titular No Registrado",
+                    "titularTelefono": "",
+                    "titularCorreo": "",
+                    "titularDireccion": "",
+                    "parentesco": "",
+                    "esEjidatario": False,
+                    "historialDifuntos": [{
+                        "id": 1,
+                        "nombre": difunto_raw or "Sin difunto registrado",
+                        "curp": "",
+                        "edad": None,
+                        "fechaDefuncion": "",
+                        "fechaInhumacion": "",
+                        "causaMuerte": "Causas naturales",
+                        "direccion": ""
+                    }] if difunto_raw else [],
+                    "historialMantenimientos": [],
+                    "historialPagos": [],
+                    "estatusPago": "Abandonada" if "abandonada" in (difunto_raw + titular_raw).lower() else "Con Adeudo",
+                    "observaciones": "Registro recuperado de Concentrado.",
+                    "coordenadas": f"19.54{len(espacios_map)%90:02d}, -99.23{len(espacios_map)%90:02d}"
+                }
+
     # 4. Generar Apertura Contable a partir de Julio 2026 ($150,000.00 MXN)
     print("Configurando corte financiero oficial (Julio 2026)...")
     movimientos_oficiales = [
@@ -473,7 +555,7 @@ def process_all_sheets():
             "fechaGeneracion": datetime.datetime.now().isoformat(),
             "corteContable": "2026-07-01",
             "saldoInicial": 150000.0,
-            "versionDataset": "2026.10-limpio-oficial"
+            "versionDataset": "2026.11-fosas-A-recuperadas"
         },
         "espacios": dataset_list,
         "movimientosFinancieros": movimientos_oficiales

@@ -23,34 +23,31 @@ import {
   calcularEstadoExpediente
 } from '../../constants/expedienteConfig';
 import { OPCIONES_PARENTESCO, TIPOS_SERVICIO_FUNERARIO } from '../../constants/panteonData';
-import { formatearNumeroFosa } from '../../utils/busquedaUtils';
 import ModalAlerta from '../common/ModalAlerta';
 
 /**
- * Función que calcula de forma automática el siguiente código consecutivo disponible
+ * Obtiene el prefijo de código oficial según la sección seleccionada.
+ */
+function obtenerPrefijoSeccion(seccionNombre) {
+  const sec = (seccionNombre || '').toLowerCase();
+  if (sec.includes('nicho') || sec.includes('ceniza')) return 'N';
+  if (sec.includes('cripta') || sec.includes('mausoleo')) return 'CR';
+  if (sec.includes('5')) return 'F5';
+  if (sec.includes('4')) return 'F4';
+  if (sec.includes('3')) return 'F3';
+  if (sec.includes('2')) return 'F2';
+  if (sec.includes('1')) return 'F1';
+  return 'F';
+}
+
+/**
+ * Función que calcula de forma automática el siguiente número consecutivo disponible
  * en base a la sección seleccionada y los registros existentes en el sistema.
  */
-function calcularSiguienteCodigo(seccionNombre, registros = []) {
-  let prefijo;
-  const sec = (seccionNombre || '').toLowerCase();
-  
-  if (sec.includes('nicho') || sec.includes('ceniza')) {
-    prefijo = 'N';
-  } else if (sec.includes('5')) {
-    prefijo = 'F5';
-  } else if (sec.includes('4')) {
-    prefijo = 'F4';
-  } else if (sec.includes('3')) {
-    prefijo = 'F3';
-  } else if (sec.includes('2')) {
-    prefijo = 'F2';
-  } else if (sec.includes('1')) {
-    prefijo = 'F1';
-  } else {
-    prefijo = 'F';
-  }
-
+function calcularSiguienteNumero(seccionNombre, registros = []) {
+  const prefijo = obtenerPrefijoSeccion(seccionNombre);
   let maxNumero = 0;
+  const sec = (seccionNombre || '').toLowerCase();
 
   for (const reg of registros) {
     const cod = (reg.codigo || '').trim().toUpperCase();
@@ -60,9 +57,11 @@ function calcularSiguienteCodigo(seccionNombre, registros = []) {
     const coincidePrefijo = cod.startsWith(prefijo.toUpperCase());
 
     if (coincideSeccion || coincidePrefijo) {
-      const matches = cod.match(/\d+/g);
-      if (matches && matches.length > 0) {
-        const num = parseInt(matches[matches.length - 1], 10);
+      // Tomar solo la parte numérica principal
+      const sinPref = cod.replace(/^[A-Z]+[0-9]*-/, '');
+      const matchNum = sinPref.match(/^(\d+)/);
+      if (matchNum) {
+        const num = parseInt(matchNum[1], 10);
         if (!isNaN(num) && num > maxNumero) {
           maxNumero = num;
         }
@@ -70,8 +69,7 @@ function calcularSiguienteCodigo(seccionNombre, registros = []) {
     }
   }
 
-  const siguiente = maxNumero + 1;
-  return `${prefijo}-${String(siguiente).padStart(3, '0')}`;
+  return maxNumero + 1;
 }
 
 export default function ModalRegistroFosa({
@@ -137,8 +135,23 @@ export default function ModalRegistroFosa({
   const [mostrarSeccionDocs, setMostrarSeccionDocs] = useState(true);
   const [cargandoDocId, setCargandoDocId] = useState(null);
   const [alertaConfig, setAlertaConfig] = useState(null);
+
+  // Control flexible para número de fosa (automático o personalizado ej: 176-A)
+  const [numeroFosaInput, setNumeroFosaInput] = useState('');
+  const [esPersonalizado, setEsPersonalizado] = useState(false);
+
+  // Consecutivo calculado para la sección actual
+  const consecutivoCalculado = useMemo(() => {
+    const sig = calcularSiguienteNumero(formData.seccionNombre, listaRegistros);
+    return String(sig).padStart(3, '0');
+  }, [formData.seccionNombre, listaRegistros]);
+
+  const numeroFosaMostrar = esPersonalizado ? numeroFosaInput : consecutivoCalculado;
+
   const resetFormulario = useCallback(() => {
     setDocumentosExpediente({});
+    setEsPersonalizado(false);
+    setNumeroFosaInput('');
     setFormData({
       codigo: '',
       seccionNombre: 'Sección 1',
@@ -182,20 +195,18 @@ export default function ModalRegistroFosa({
   // Si no está abierto, no renderizar nada
   if (!visible) return null;
 
-  // Manejar cambio de sección y recalcular código en automático
+  // Manejar cambio de sección y sugerir nuevo consecutivo si no es personalizado
   const handleSeccionChange = (nuevaSeccion) => {
-    const nuevoCodigo = calcularSiguienteCodigo(nuevaSeccion, listaRegistros);
-    const nuevoTipo = nuevaSeccion.toLowerCase().includes('nicho') ? 'Nicho' : 'Fosa';
+    const nuevoTipo = nuevaSeccion.toLowerCase().includes('nicho') 
+      ? 'Nicho' 
+      : (nuevaSeccion.toLowerCase().includes('cripta') ? 'Mausoleo' : 'Fosa');
 
     setFormData(prev => ({
       ...prev,
       seccionNombre: nuevaSeccion,
-      codigo: nuevoCodigo,
       tipoEspacio: nuevoTipo
     }));
   };
-
-  const codigoActualOCalculado = formData.codigo || calcularSiguienteCodigo(formData.seccionNombre, listaRegistros);
 
   // Manejador para adjuntar documento al expediente en nuevo registro
   const handleAdjuntarDoc = async (docId, archivo) => {
@@ -245,13 +256,48 @@ export default function ModalRegistroFosa({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const codigoFinal = formData.codigo.trim() || codigoActualOCalculado;
+    const inputLimpio = (numeroFosaMostrar || '').trim();
 
-    if (!codigoFinal || !formData.titularNombre.trim()) {
+    if (!inputLimpio || !formData.titularNombre.trim()) {
       setAlertaConfig({
         tipo: 'advertencia',
         titulo: 'Campos Requeridos Incompletos',
-        mensaje: 'Por favor completa el código de fosa y el nombre del titular para continuar con el registro.',
+        mensaje: 'Por favor completa el número de fosa y el nombre del titular para continuar con el registro.',
+        textoBotonPrincipal: 'Entendido',
+        onAceptar: () => setAlertaConfig(null)
+      });
+      return;
+    }
+
+    const prefijo = obtenerPrefijoSeccion(formData.seccionNombre);
+    let codigoFinal;
+    let numeroFinal;
+
+    if (new RegExp(`^${prefijo}-`, 'i').test(inputLimpio)) {
+      codigoFinal = inputLimpio.toUpperCase();
+      numeroFinal = inputLimpio.replace(new RegExp(`^${prefijo}-`, 'i'), '').trim().toUpperCase();
+    } else {
+      const sinPref = inputLimpio.replace(/^[A-Za-z]+[0-9]*-/, '').trim().toUpperCase();
+      let numFormateado = sinPref;
+      if (/^\d+$/.test(sinPref)) {
+        numFormateado = sinPref.padStart(3, '0');
+      } else if (/^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$/.test(sinPref)) {
+        const m = sinPref.match(/^(\d+)\s*[-/ ]?\s*([A-Za-z]+)$/);
+        numFormateado = `${m[1].padStart(3, '0')}-${m[2].toUpperCase()}`;
+      }
+      codigoFinal = `${prefijo}-${numFormateado}`;
+      numeroFinal = sinPref;
+    }
+
+    // Validar si la fosa ya existe en el padrón
+    const duplicado = listaRegistros.find(r => 
+      (r.codigo || '').trim().toUpperCase() === codigoFinal.toUpperCase()
+    );
+    if (duplicado) {
+      setAlertaConfig({
+        tipo: 'advertencia',
+        titulo: 'Número de Fosa Ya Registrado',
+        mensaje: `La fosa ${numeroFinal} en ${formData.seccionNombre} (Código: ${codigoFinal}) ya existe en el sistema y pertenece a "${duplicado.titularNombre || 'Titular Registrado'}". Si deseas registrar difuntos en esta fosa, búscate en el Padrón y haz clic en Editar.`,
         textoBotonPrincipal: 'Entendido',
         onAceptar: () => setAlertaConfig(null)
       });
@@ -261,6 +307,7 @@ export default function ModalRegistroFosa({
     const nuevoRegistro = {
       id: Date.now(),
       codigo: codigoFinal.toUpperCase(),
+      numero: numeroFinal,
       seccionNombre: formData.seccionNombre,
       tipoEspacio: formData.tipoEspacio,
       tipoConstruccion: formData.tipoConstruccion || 'Sencilla',
@@ -349,18 +396,39 @@ export default function ModalRegistroFosa({
               </select>
             </div>
 
-            {/* 2. Código / Lote (Automático) */}
+            {/* 2. Número de Fosa / Lote */}
             <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Número de Fosa (Automático) *</label>
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-stone-700">Número de Fosa *</label>
+                {esPersonalizado && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNumeroFosaInput('');
+                      setEsPersonalizado(false);
+                    }}
+                    className="text-[10px] text-teal-700 hover:text-teal-900 underline font-semibold cursor-pointer"
+                  >
+                    Usar consecutivo
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
-                disabled
-                readOnly
-                value={formatearNumeroFosa(formData.codigo || codigoActualOCalculado)}
-                className="w-full bg-cream-100/90 border border-cream-300 rounded-xl p-2.5 font-mono font-black text-teal-900 cursor-not-allowed select-all shadow-inner"
+                value={numeroFosaMostrar}
+                onChange={(e) => {
+                  setNumeroFosaInput(e.target.value);
+                  setEsPersonalizado(true);
+                }}
+                placeholder="Ej: 176-A, 262-A, 691"
+                className="w-full bg-white border border-cream-300 rounded-xl p-2.5 font-mono font-bold text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-2xs"
               />
               <span className="text-[10px] text-stone-500 block">
-                Consecutivo calculado de <strong>{formData.seccionNombre}</strong>
+                {esPersonalizado ? (
+                  <span className="text-amber-800 font-medium">Número manual (permite sufijos con letra ej: 176-A)</span>
+                ) : (
+                  <>Consecutivo calculado de <strong>{formData.seccionNombre}</strong> (puedes editarlo si tiene letra ej: 176-A)</>
+                )}
               </span>
             </div>
 

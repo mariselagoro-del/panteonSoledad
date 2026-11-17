@@ -17,6 +17,7 @@ export const SECCIONES_INICIALES = [
   { id: 4, nombre: 'Sección 4', subtexto: 'Fondo Poniente', capacidadEstimada: 400 },
   { id: 5, nombre: 'Sección 5', subtexto: 'Frente Poniente / Entrada', capacidadEstimada: 350 },
   { id: 6, nombre: 'Zona de Nichos', subtexto: 'Sector de Urnas y Cenizas', capacidadEstimada: 500 },
+  { id: 7, nombre: 'Criptas', subtexto: 'Sector de Criptas y Mausoleos', capacidadEstimada: 100 },
 ];
 
 // Distribución oficial de la cuadrícula 4 columnas x 3 filas (12 celdas) según el mural histórico

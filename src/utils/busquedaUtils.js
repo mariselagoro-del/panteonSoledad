@@ -24,6 +24,7 @@ export function normalizarTexto(texto) {
 /**
  * Comprueba si un texto contiene todas las palabras (tokens) del término de búsqueda.
  * Permite coincidencias sin importar el orden de nombres y apellidos.
+ * Tolera comas, puntos y separadores comunes en la consulta del usuario.
  */
 export function coincideTexto(textoFuente, terminoBusqueda) {
   const fuenteNorm = normalizarTexto(textoFuente);
@@ -32,8 +33,29 @@ export function coincideTexto(textoFuente, terminoBusqueda) {
   if (!busquedaNorm) return true;
   if (!fuenteNorm) return false;
 
-  const tokens = busquedaNorm.split(/\s+/).filter(Boolean);
+  const tokens = busquedaNorm
+    .replace(/[,;:.]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+
   return tokens.every(token => fuenteNorm.includes(token));
+}
+
+/**
+ * Retorna variantes textuales equivalentes para una sección (números arábigos y romanos).
+ * Ejemplo: "Sección 2" -> "seccion 2 seccion ii sec 2 sec ii"
+ */
+export function obtenerEquivalentesSeccion(seccion) {
+  const norm = normalizarTexto(seccion);
+  const extra = [];
+  if (norm.includes('1') || norm.includes('i')) extra.push('seccion 1', 'seccion i', 'sec 1', 'sec i');
+  if (norm.includes('2') || norm.includes('ii')) extra.push('seccion 2', 'seccion ii', 'sec 2', 'sec ii');
+  if (norm.includes('3') || norm.includes('iii')) extra.push('seccion 3', 'seccion iii', 'sec 3', 'sec iii');
+  if (norm.includes('4') || norm.includes('iv')) extra.push('seccion 4', 'seccion iv', 'sec 4', 'sec iv');
+  if (norm.includes('5') || norm.includes('v')) extra.push('seccion 5', 'seccion v', 'sec 5', 'sec v');
+  if (norm.includes('nicho')) extra.push('nichos', 'zona de nichos', 'cenizas', 'urnas');
+  if (norm.includes('cripta')) extra.push('criptas', 'mausoleo', 'mausoleos');
+  return extra.join(' ');
 }
 
 /**
@@ -113,15 +135,25 @@ export function coincideEspacioConBusqueda(espacio, query) {
   }
 
   // 1. Coincidencia en campos directos del espacio
-  const camposEspacio = [
+  const sinPrefijo = (espacio.codigo || '').replace(/^[a-z0-9]+-/i, '').trim();
+  const sinCeros = sinPrefijo.replace(/^0+/, '');
+  const variantesCodigo = [
     espacio.codigo || '',
     espacio.numero || '',
-    (espacio.codigo || '').replace(/^[a-z0-9]+-/i, ''),
+    sinPrefijo,
+    sinCeros,
+    (espacio.codigo || '').replace(/[-_]/g, ' '),
+    sinPrefijo.replace(/[-_]/g, ' ')
+  ].join(' ');
+
+  const camposEspacio = [
+    variantesCodigo,
     espacio.titularNombre || '',
     espacio.titularTelefono || '',
     espacio.titularCorreo || '',
     espacio.titularDireccion || '',
     espacio.seccionNombre || '',
+    obtenerEquivalentesSeccion(espacio.seccionNombre),
     espacio.tipoEspacio || '',
     espacio.tipoConstruccion || '',
     espacio.fechaSellado || '',
