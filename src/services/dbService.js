@@ -778,40 +778,110 @@ export const dbService = {
   },
 
   /**
-   * Sincroniza y actualiza la base de datos local con el dataset definitivo (Julio 2026),
-   * asegurando que las fosas y los movimientos arranquen exactamente con el nuevo archivo
-   * y el saldo inicial de $150,000.00 MXN sin alterar expedientes digitales ni archivos adjuntos.
+   * Sincroniza y actualiza la base de datos local con el dataset definitivo,
+   * preservando de forma estricta cualquier fosa nueva creada por el usuario,
+   * pagos registrados en caja, difuntos adicionales o documentos adjuntos.
    */
-  sincronizarDatasetDefinitivo: async (espaciosNuevos = [], movimientosNuevos = [], version = '2026.10-limpio-oficial') => {
+  sincronizarDatasetDefinitivo: async (espaciosNuevos = [], movimientosNuevos = [], version = '2026.11-fosas-A-recuperadas') => {
     try {
       const db = await abrirBaseDatos();
       if (!db) return false;
 
       return new Promise((resolve, reject) => {
-        const tx = db.transaction([STORES.FOSAS, STORES.MOVIMIENTOS], 'readwrite');
-        const fosaStore = tx.objectStore(STORES.FOSAS);
-        const movStore = tx.objectStore(STORES.MOVIMIENTOS);
+        const txRead = db.transaction([STORES.FOSAS, STORES.MOVIMIENTOS], 'readonly');
+        const reqFosasExistentes = txRead.objectStore(STORES.FOSAS).getAll();
+        const reqMovsExistentes = txRead.objectStore(STORES.MOVIMIENTOS).getAll();
 
-        // Limpiar almacenes para no dejar registros obsoletos
-        fosaStore.clear();
-        movStore.clear();
+        txRead.oncomplete = () => {
+          const fosasLocales = reqFosasExistentes.result || [];
+          const movsLocales = reqMovsExistentes.result || [];
 
-        for (const f of espaciosNuevos) {
-          fosaStore.put(f);
-        }
-
-        for (const m of movimientosNuevos) {
-          movStore.put(m);
-        }
-
-        tx.oncomplete = () => {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            window.localStorage.setItem('panteon_dataset_version', version || '2026.10-definitivo-v2');
+          // Mapa de nuevos espacios por código
+          const mapaNuevos = new Map();
+          for (const f of espaciosNuevos) {
+            mapaNuevos.set((f.codigo || '').toUpperCase(), { ...f });
           }
-          resolve(true);
+
+          // Identificar fosas locales creadas por el usuario o modificadas
+          const fosasPreservadas = [];
+          for (const local of fosasLocales) {
+            const codLocal = (local.codigo || '').toUpperCase();
+            if (!codLocal) continue;
+
+            if (!mapaNuevos.has(codLocal)) {
+              // Fosa nueva creada por el usuario que no venía en el archivo base: PRESERVAR INTACTA
+              fosasPreservadas.push(local);
+            } else {
+              // Si ya venía en el archivo pero el usuario le agregó pagos, difuntos o expedientes
+              const nueva = mapaNuevos.get(codLocal);
+              
+              // Preservar pagos locales si el usuario registró pagos recientes
+              const pagosLocales = local.historialPagos || [];
+              if (pagosLocales.length > 0) {
+                nueva.historialPagos = pagosLocales;
+              }
+
+              // Preservar difuntos adicionales que el usuario haya registrado
+              const difuntosNuevosNombres = new Set((nueva.historialDifuntos || []).map(d => (d.nombre || '').toLowerCase().trim()));
+              const difuntosLocalesExtra = (local.historialDifuntos || []).filter(d => d.nombre && !difuntosNuevosNombres.has(d.nombre.toLowerCase().trim()));
+              if (difuntosLocalesExtra.length > 0) {
+                nueva.historialDifuntos = [...(nueva.historialDifuntos || []), ...difuntosLocalesExtra];
+              }
+
+              // Preservar expediente y documentos si el usuario adjuntó archivos
+              if (local.expediente?.documentos && Object.keys(local.expediente.documentos).length > 0) {
+                nueva.expediente = local.expediente;
+              }
+
+              // Preservar observaciones personalizadas
+              if (local.observaciones && !nueva.observaciones) {
+                nueva.observaciones = local.observaciones;
+              }
+
+              mapaNuevos.set(codLocal, nueva);
+            }
+          }
+
+          // Movimientos: preservar movimientos/recibos registrados por el usuario
+          const foliosNuevos = new Set(movimientosNuevos.map(m => m.folio || m.id));
+          const movsPreservados = movsLocales.filter(m => m.folio && !foliosNuevos.has(m.folio));
+
+          const txWrite = db.transaction([STORES.FOSAS, STORES.MOVIMIENTOS], 'readwrite');
+          const fosaStore = txWrite.objectStore(STORES.FOSAS);
+          const movStore = txWrite.objectStore(STORES.MOVIMIENTOS);
+
+          fosaStore.clear();
+          movStore.clear();
+
+          // Guardar base actualizada con fosas alfanuméricas recuperadas
+          for (const f of mapaNuevos.values()) {
+            fosaStore.put(f);
+          }
+          // Guardar fosas creadas manualmente por el usuario
+          for (const f of fosasPreservadas) {
+            fosaStore.put(f);
+          }
+
+          // Guardar movimientos base
+          for (const m of movimientosNuevos) {
+            movStore.put(m);
+          }
+          // Guardar movimientos y recibos generados por el usuario
+          for (const m of movsPreservados) {
+            movStore.put(m);
+          }
+
+          txWrite.oncomplete = () => {
+            if (typeof window !== 'undefined' && window.localStorage) {
+              window.localStorage.setItem('panteon_dataset_version', version || '2026.11-fosas-A-recuperadas');
+            }
+            resolve(true);
+          };
+
+          txWrite.onerror = (e) => reject(e.target.error);
         };
 
-        tx.onerror = (e) => reject(e.target.error);
+        txRead.onerror = (e) => reject(e.target.error);
       });
     } catch (err) {
       console.error('Error al sincronizar dataset definitivo:', err);
