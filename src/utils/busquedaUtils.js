@@ -146,6 +146,15 @@ export function coincideEspacioConBusqueda(espacio, query) {
     sinPrefijo.replace(/[-_]/g, ' ')
   ].join(' ');
 
+  // Folios y conceptos de recibos/pagos y mantenimientos registrados
+  const datosPagos = (espacio.historialPagos || []).map(p => 
+    `${p.folio || ''} ${p.folioFisico || ''} ${p.concepto || ''} ${p.titular || ''} ${p.difunto || ''}`
+  ).join(' ');
+
+  const datosMantenimientos = (espacio.historialMantenimientos || []).map(m =>
+    `${m.folio || ''} ${m.concepto || ''} ${m.anio || ''}`
+  ).join(' ');
+
   const camposEspacio = [
     variantesCodigo,
     espacio.titularNombre || '',
@@ -157,7 +166,9 @@ export function coincideEspacioConBusqueda(espacio, query) {
     espacio.tipoEspacio || '',
     espacio.tipoConstruccion || '',
     espacio.fechaSellado || '',
-    espacio.observaciones || ''
+    espacio.observaciones || '',
+    datosPagos,
+    datosMantenimientos
   ].join(' ');
 
   const coincideEspacioDirecto = coincideTexto(camposEspacio, queryNorm);

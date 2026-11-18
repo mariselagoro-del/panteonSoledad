@@ -554,6 +554,8 @@ export default function App() {
               <FinanzasCaja
                 movimientos={movimientosFinancieros}
                 onRegistrarMovimiento={handleRegistrarMovimiento}
+                registrosFosas={registrosFosas}
+                onActualizarFosa={handleActualizarRegistro}
               />
             )}
 
