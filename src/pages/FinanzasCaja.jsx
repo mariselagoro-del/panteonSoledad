@@ -684,16 +684,14 @@ export default function FinanzasCaja({
                           key={c.nombre}
                           type="button"
                           onClick={() => handleAplicarConceptoRapido(c)}
-                          className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer font-bold flex items-center justify-between min-h-[42px] ${
                             activo
                               ? 'bg-[#152822] text-white border-[#152822] shadow-2xs'
                               : 'bg-white hover:bg-cream-100 text-stone-800 border-cream-300'
                           }`}
                         >
-                          <div className="font-bold text-[11px] truncate">{c.nombre}</div>
-                          <div className={`text-[10px] font-mono ${activo ? 'text-cream-200' : 'text-emerald-700 font-bold'}`}>
-                            {c.monto !== '' ? `$${c.monto}.00 MXN` : 'Monto libre'}
-                          </div>
+                          <span className="font-bold text-[11px] truncate">{c.nombre}</span>
+                          {activo && <CheckCircle2 className="w-3.5 h-3.5 text-cream-200 shrink-0 ml-1.5" />}
                         </button>
                       );
                     })}
