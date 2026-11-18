@@ -69,31 +69,39 @@ export default function ModalPermisoArregloTumba({
   };
 
   const contenidoModal = (
-    <div className="permiso-print-portal fixed inset-0 z-[100] bg-black/55 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+    <div className="permiso-print-portal fixed inset-0 z-[100] bg-black/55 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 print:p-0 print:bg-white print:static print:block print:w-full print:h-auto">
       <style>{`
         @media print {
           @page {
             size: letter portrait !important;
-            margin: 4mm !important;
+            margin: 4mm 5mm !important;
           }
           html, body {
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
-            overflow: visible !important;
-            height: auto !important;
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            width: 100% !important;
           }
           #root {
             display: none !important;
           }
           .permiso-print-portal {
             position: static !important;
-            display: block !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             width: 100% !important;
-            height: auto !important;
+            height: 100% !important;
+            max-height: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
             background: #ffffff !important;
+            overflow: hidden !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .permiso-print-portal * {
             -webkit-print-color-adjust: exact !important;
@@ -102,7 +110,7 @@ export default function ModalPermisoArregloTumba({
         }
       `}</style>
 
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[94vh] flex flex-col border border-cream-300 overflow-hidden print:shadow-none print:border-none print:max-h-none print:rounded-none print:w-full print:max-w-none print:block">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[94vh] flex flex-col border border-cream-300 overflow-hidden print:shadow-none print:border-none print:max-h-none print:rounded-none print:w-full print:max-w-none print:h-full print:overflow-hidden print:block print:p-0 print:m-0">
         {/* Barra Superior de Control (Oculta al imprimir) */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3.5 border-b border-cream-300 bg-cream-50 print:hidden">
           <div className="flex items-center gap-2.5 text-teal-900 font-bold text-sm">
@@ -167,7 +175,7 @@ export default function ModalPermisoArregloTumba({
         </div>
 
         {/* Cuerpo: Editor o Documento Imprimible */}
-        <div className="flex-1 overflow-y-auto bg-stone-100/70 p-3 sm:p-6 print:p-0 print:bg-white print:overflow-visible">
+        <div className="flex-1 overflow-y-auto bg-stone-100/70 p-3 sm:p-6 print:p-0 print:bg-white print:overflow-hidden print:h-full print:max-h-full print:flex print:items-center print:justify-center">
           {modoEditor ? (
             <div className="max-w-3xl mx-auto print:hidden">
               <FormularioEditorPermisoTumba
@@ -185,7 +193,7 @@ export default function ModalPermisoArregloTumba({
             </div>
           ) : null}
 
-          <div className={modoEditor ? 'hidden print:block' : 'block'}>
+          <div className={modoEditor ? 'hidden print:block print:w-full print:h-full' : 'block print:w-full print:h-full'}>
             <VistaDocumentoPermisoTumba
               datosPermiso={datosPermiso}
               plantilla={plantilla}

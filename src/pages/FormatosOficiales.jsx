@@ -198,18 +198,27 @@ export default function FormatosOficiales({
   };
 
   return (
-    <div className="space-y-5 animate-fadeIn print:space-y-0 print:overflow-hidden print:max-h-[268mm] print:page-break-inside-avoid print:break-inside-avoid">
+    <div className="space-y-5 animate-fadeIn print:space-y-0 print:overflow-hidden print:h-full print:max-h-full print:page-break-inside-avoid print:break-inside-avoid">
       <style>{`
         @media print {
           @page {
             size: letter portrait !important;
-            margin: 5mm !important;
+            margin: 4mm 5mm !important;
           }
           html, body {
             overflow: hidden !important;
             height: 100% !important;
             max-height: 100% !important;
             background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          #root, #root > div, #root > div > div, main {
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           * {
             -webkit-print-color-adjust: exact !important;
@@ -448,7 +457,7 @@ export default function FormatosOficiales({
           )}
         </div>
 
-        <div className="xl:col-span-7 print:w-full">
+        <div className="xl:col-span-7 print:w-full print:h-full print:overflow-hidden print:flex print:items-center print:justify-center">
           {formatoActivo === 'permiso-arreglo' ? (
             <VistaDocumentoPermisoTumba
               datosPermiso={datosPermiso}
